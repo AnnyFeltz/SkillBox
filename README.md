@@ -1,1 +1,1 @@
-# SkillBox meu porjeto de TCC
+# SkillBox meu projeto de TCC
