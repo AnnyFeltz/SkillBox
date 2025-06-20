@@ -1,52 +1,68 @@
-<x-guest-layout>
-    <form method="POST" action="{{ route('register') }}">
-        @csrf
+@extends('layouts.skillboxApp')
 
-        <!-- Name -->
-        <div>
-            <x-input-label for="name" :value="__('Name')" />
-            <x-text-input id="name" class="block mt-1 w-full" type="text" name="name" :value="old('name')" required autofocus autocomplete="name" />
-            <x-input-error :messages="$errors->get('name')" class="mt-2" />
-        </div>
+@section('title', 'Registrar')
+@section('titulo', 'Criar Conta')
 
-        <!-- Email Address -->
-        <div class="mt-4">
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autocomplete="username" />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+@section('content')
+<form method="POST" action="{{ route('register') }}" >
+    @csrf
 
-        <!-- Password -->
-        <div class="mt-4">
-            <x-input-label for="password" :value="__('Password')" />
+    <label for="name">Nome</label>
+    <input 
+        id="name" 
+        name="name" 
+        type="text" 
+        value="{{ old('name') }}" 
+        required 
+        autofocus 
+        autocomplete="name" 
+        class="input-field"
+    />
+    @error('name') <div class="error">{{ $message }}</div> @enderror
 
-            <x-text-input id="password" class="block mt-1 w-full"
-                            type="password"
-                            name="password"
-                            required autocomplete="new-password" />
+    <label for="email" class="mt-4">Email</label>
+    <input 
+        id="email" 
+        name="email" 
+        type="email" 
+        value="{{ old('email') }}" 
+        required 
+        autocomplete="username" 
+        class="input-field"
+    />
+    @error('email') <div class="error">{{ $message }}</div> @enderror
 
-            <x-input-error :messages="$errors->get('password')" class="mt-2" />
-        </div>
+    <label for="password" class="mt-4">Senha</label>
+    <input 
+        id="password" 
+        name="password" 
+        type="password" 
+        required 
+        autocomplete="new-password" 
+        class="input-field"
+    />
+    @error('password') <div class="error">{{ $message }}</div> @enderror
 
-        <!-- Confirm Password -->
-        <div class="mt-4">
-            <x-input-label for="password_confirmation" :value="__('Confirm Password')" />
+    <label for="password_confirmation" class="mt-4">Confirmar Senha</label>
+    <input 
+        id="password_confirmation" 
+        name="password_confirmation" 
+        type="password" 
+        required 
+        autocomplete="new-password" 
+        class="input-field"
+    />
+    @error('password_confirmation') <div class="error">{{ $message }}</div> @enderror
 
-            <x-text-input id="password_confirmation" class="block mt-1 w-full"
-                            type="password"
-                            name="password_confirmation" required autocomplete="new-password" />
+    <div class="flex justify-between items-center mt-6">
+        <a href="{{ route('login') }}" class="link">Já registrado?</a>
+        <button type="submit" class="btn-primary">Registrar</button>
+    </div>
+</form>
+@endsection
 
-            <x-input-error :messages="$errors->get('password_confirmation')" class="mt-2" />
-        </div>
-
-        <div class="flex items-center justify-end mt-4">
-            <a class="underline text-sm text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-gray-100 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500 dark:focus:ring-offset-gray-800" href="{{ route('login') }}">
-                {{ __('Already registered?') }}
-            </a>
-
-            <x-primary-button class="ms-4">
-                {{ __('Register') }}
-            </x-primary-button>
-        </div>
-    </form>
-</x-guest-layout>
+@section('menu-items')
+<li><a href="/"><i class="icon-dashboard material-symbols-outlined">home</i> <span class="label">Inicio</span></a></li>
+<li><a href="/login"><i class="icon-user material-symbols-outlined">login</i> <span class="label">Entrar</span></a></li>
+<li><a href="/register"><i class="icon-user material-symbols-outlined">person_add</i> <span class="label">Registrar</span></a></li>
+@endsection

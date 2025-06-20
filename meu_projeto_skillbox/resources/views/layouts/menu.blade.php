@@ -1,14 +1,23 @@
-<div class="sidebar">
+<aside class="sidebar collapsed" id="sidebar">
     <div class="logo">
+        <button id="toggle-sidebar" aria-label="Abrir/fechar menu" aria-expanded="false">
+            <span class="material-symbols-outlined menu-icon">menu</span>
+        </button>
         <h2>MeuApp</h2>
     </div>
 
     <ul class="menu-list">
-        <li><a href="/dashboard"><i class="icon-dashboard"></i> <span class="label">Dashboard</span></a></li>
-        <li><a href="/profile"><i class="icon-user"></i> <span class="label">Perfil</span></a></li>
-        <li><a href="/settings"><i class="icon-settings"></i> <span class="label">Configurações</span></a></li>
-        <li><a href="/logout"><i class="icon-logout"></i> <span class="label">Sair</span></a></li>
+        <div class="menu-options">
+            @yield('menu-items')
+        </div>
+            <li>
+                <a href="#" onclick="event.preventDefault(); document.getElementById('logout-form-sidebar').submit();">
+                    <i class="icon-logout material-symbols-outlined">logout</i> <span class="label">Sair</span>
+                </a>
+
+                <form id="logout-form-sidebar" action="{{ route('logout') }}" method="POST" style="display:none;">
+                    @csrf
+                </form>
+            </li>
     </ul>
-
-
-</div>
+</aside>

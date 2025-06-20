@@ -1,25 +1,34 @@
-<x-guest-layout>
-    <div class="mb-4 text-sm text-gray-600 dark:text-gray-400">
-        {{ __('Forgot your password? No problem. Just let us know your email address and we will email you a password reset link that will allow you to choose a new one.') }}
-    </div>
+@extends('layouts.skillboxApp')
 
-    <!-- Session Status -->
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+@section('title', 'Recuperar Senha')
+@section('titulo', 'Esqueceu a Senha?')
 
-    <form method="POST" action="{{ route('password.email') }}">
+@section('content')
+    <p class="info-text">
+        Esqueceu sua senha? Sem problema. Informe seu email e enviaremos um link para você criar uma nova senha.
+    </p>
+
+    @if(session('status'))
+        <div class="alert-success">{{ session('status') }}</div>
+    @endif
+
+    <form method="POST" action="{{ route('password.email') }}" >
         @csrf
 
-        <!-- Email Address -->
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input id="email" class="block mt-1 w-full" type="email" name="email" :value="old('email')" required autofocus />
-            <x-input-error :messages="$errors->get('email')" class="mt-2" />
-        </div>
+        <label for="email">Email</label>
+        <input 
+            id="email" 
+            name="email" 
+            type="email" 
+            value="{{ old('email') }}" 
+            required 
+            autofocus 
+            class="input-field"
+        />
+        @error('email')
+            <div class="error">{{ $message }}</div>
+        @enderror
 
-        <div class="flex items-center justify-end mt-4">
-            <x-primary-button>
-                {{ __('Email Password Reset Link') }}
-            </x-primary-button>
-        </div>
+        <button type="submit" class="btn-primary mt-4">Enviar Link de Reset</button>
     </form>
-</x-guest-layout>
+@endsection

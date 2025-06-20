@@ -1,98 +1,130 @@
-@import "bootstrap/dist/css/bootstrap.min.css";
+@import "bootstrap/dist/css/bootstrap.min.css"; /* importa bootstrap */
 
 /* Reset básico */
 * {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
+  margin: 0; /* remove margens */
+  padding: 0; /* remove padding */
+  box-sizing: border-box; /* padding e border dentro da largura */
 }
 
 body, html {
-  height: 100%;
-  font-family: 'Segoe UI', sans-serif;
+  height: 100%; /* tela cheia */
+  font-family: 'Segoe UI', sans-serif; /* fonte padrão */
 }
 
-/* Container principal */
 .conteiner {
-  display: flex;
-  height: 100vh;
+  display: flex; /* sidebar + conteúdo lado a lado */
+  height: 100vh; /* altura da tela */
 }
 
-/* Sidebar */
 .sidebar {
-  width: 250px;
-  background-color: #1e1e2f;
-  color: #fff;
-  transition: width 0.3s ease;
-  overflow: hidden;
-  position: relative;
+  width: 250px; /* largura aberta */
+  background-color: #1e1e2f; /* fundo escuro */
+  color: #fff; /* texto branco */
+  transition: width 0.3s ease; /* animação largura */
+  overflow: hidden; /* esconde conteúdo que vaza */
+  position: relative; /* para filhos absolutos */
 }
 
 .sidebar.collapsed {
-  width: 70px;
+  width: 70px; /* largura fechada */
 }
 
-/* Logo */
 .sidebar .logo {
+  position: relative;
   padding: 20px;
-  font-size: 1.5em;
-  text-align: center;
-  background-color: #151523;
-  border-bottom: 1px solid #333;
-  transition: opacity 0.3s ease;
+  display: flex; /* botão e texto alinhados */
+  align-items: center;
+  gap: 12px; /* espaço entre */
+  background-color: #151523; /* fundo mais escuro */
+  border-bottom: 1px solid #333; /* separador */
+  transition: opacity 0.3s ease; /* transição suave */
 }
 
+.sidebar .logo button#toggle-sidebar {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #fff;
+  font-size: 28px;
+  padding: 0;
+  display: flex; /* centraliza ícone */
+  align-items: center;
+  justify-content: center;
+}
+
+/* texto do logo some na sidebar fechada */
 .sidebar.collapsed .logo h2 {
   opacity: 0;
+  pointer-events: none; /* não clicável */
+  user-select: none; /* não selecionável */
+  width: 0;
+  overflow: hidden;
+  transition: opacity 0.3s ease, width 0.3s ease;
 }
 
-/* Menu */
+/* texto do logo aparece na aberta */
+.sidebar:not(.collapsed) .logo h2 {
+  opacity: 1;
+  width: auto;
+  transition: opacity 0.3s ease, width 0.3s ease;
+}
+
 .menu-list {
-  list-style: none;
+  list-style: none; /* remove bullets */
+  display: flex;
+  flex-direction: column;
   padding: 20px 0;
+  min-height: calc(100vh - 100px); /* altura da sidebar menos logo */
+  justify-content: space-between; /* espaça os itens */
 }
 
 .menu-list li {
-  transition: background 0.2s;
+  transition: background 0.2s; /* transição no hover */
 }
 
 .menu-list li:hover {
-  background-color: #2d2d44;
+  background-color: #2d2d44; /* cor no hover */
 }
 
 .menu-list li a {
+  position: relative;
+  display: block;
+  padding-left: 50px; /* espaço para ícone */
+  height: 50px; /* altura fixa */
+  line-height: 50px; /* centra texto vertical */
   color: #fff;
   text-decoration: none;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 20px;
 }
 
+/* ícone do menu fixo à esquerda */
 .menu-list li a i {
-  min-width: 20px;
+  position: absolute;
+  left: 25px;
+  top: 50%;
+  transform: translateY(-50%); /* centra vertical */
+  font-size: 1.2rem;
+  width: 20px;
   text-align: center;
 }
 
-/* Textos dos itens */
-.menu-list li a .label {
-  transition: opacity 0.2s ease;
-  white-space: nowrap;
-}
-
+/* label escondido quando sidebar fechada */
 .sidebar.collapsed .menu-list li a .label {
   display: none;
 }
 
-/* Conteúdo principal */
+/* label aparece quando sidebar aberta */
+.sidebar:not(.collapsed) .menu-list li a .label {
+  display: inline;
+}
+
 .main {
-  flex: 1;
-  background-color: #f4f4f4;
+  flex: 1; /* ocupa espaço restante */
+  background-color: #f4f4f4; /* fundo claro */
   display: flex;
   flex-direction: column;
 }
 
-/* Navbar (cabeçalho) */
 .navbar {
   background-color: #fff;
   padding: 15px 20px;
@@ -109,9 +141,299 @@ body, html {
   cursor: pointer;
 }
 
-/* Conteúdo da página */
 .content {
   padding: 20px;
   overflow-y: auto;
   flex: 1;
 }
+
+form {
+  max-width: 450px;
+  margin: 0 auto;
+  background: #fff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+.form {
+  max-width: 450px;
+  margin: 0 auto;
+  background: #f36dff;
+  padding: 2rem;
+  border-radius: 8px;
+  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+  font-family: 'Segoe UI', sans-serif;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  color: #333;
+}
+
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="checkbox"] {
+  width: 100%;
+  padding: 10px 12px;
+  border: 1.5px solid #ccc;
+  border-radius: 6px;
+  font-size: 1rem;
+  transition: border-color 0.2s;
+}
+
+input[type="checkbox"] {
+  width: auto;
+  margin-right: 8px;
+  vertical-align: middle;
+}
+
+input[type="text"]:focus,
+input[type="email"]:focus,
+input[type="password"]:focus {
+  border-color: #4f46e5; /* roxo no foco */
+  outline: none;
+  box-shadow: 0 0 5px #c7d2fe;
+}
+
+.input-error {
+  color: #dc2626; /* vermelho erro */
+  font-size: 0.875rem;
+  margin-top: 4px;
+}
+
+button, .btn, .x-primary-button {
+  background-color: #4f46e5; /* botão roxo */
+  color: white;
+  padding: 10px 18px;
+  font-weight: 600;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  font-size: 1rem;
+}
+
+button:hover, .btn:hover, .x-primary-button:hover {
+  background-color: #4338ca; /* roxo escuro hover */
+}
+
+a {
+  color: #4f46e5;
+  text-decoration: underline;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: color 0.2s ease;
+}
+
+a:hover {
+  color: #3730a3; /* roxo escuro link hover */
+}
+
+.mb-4 {
+  margin-bottom: 1rem; /* espaçamento utilitário */
+}
+
+.text-sm {
+  font-size: 0.875rem; /* texto pequeno */
+}
+
+.text-gray-600 {
+  color: #4b5563; /* cinza escuro */
+}
+
+.text-gray-400, .dark\:text-gray-400 {
+  color: #9ca3af; /* cinza claro */
+}
+
+.flex {
+  display: flex;
+}
+
+.items-center {
+  align-items: center;
+}
+
+.justify-end {
+  justify-content: flex-end;
+}
+
+.mt-4 {
+  margin-top: 1rem;
+}
+
+.mt-2 {
+  margin-top: 0.5rem;
+}
+
+.ms-2 {
+  margin-left: 0.5rem;
+}
+
+.gap-4 {
+  gap: 1rem;
+}
+
+.inline-flex {
+  display: inline-flex;
+  align-items: center;
+}
+
+[x-data] {
+  transition: opacity 0.5s ease; /* para Alpine.js */
+}
+
+h1, h2 {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.space-y-6 > * + * {
+  margin-top: 1.5rem; /* espaçamento vertical */
+}
+
+.max-w-xl {
+  max-width: 36rem;
+  margin: 0 auto; /* centraliza horizontal */
+}
+
+/* Dark mode */
+body.dark {
+  background-color: #111827;
+  color: #d1d5db;
+}
+
+body.dark input {
+  background-color: #1f2937;
+  color: #d1d5db;
+  border-color: #374151;
+}
+
+body.dark button, body.dark .x-primary-button {
+  background-color: #6366f1;
+}
+
+body.dark button:hover, body.dark .x-primary-button:hover {
+  background-color: #4f46e5;
+}
+
+.user-icon {
+  font-size: 50px;
+}
+
+.menu-icon {
+  color: #374151;
+  margin: 0px;
+  font-size: 30px;
+}
+
+.menu-options {
+  display: block;
+}
+
+/* Wrapper geral */
+.editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+/* Toolbar no topo */
+.toolbar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px;
+    background-color: #f8f9fa;
+    border-bottom: 1px solid #ddd;
+    align-items: center;
+}
+
+.toolbar button,
+.toolbar input[type="file"],
+.toolbar input[type="range"] {
+    padding: 6px 12px;
+    font-size: 14px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: white;
+    cursor: pointer;
+}
+
+.toolbar button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+}
+
+/* Conteúdo principal com canvas + painel propriedades lado a lado */
+.editor-main {
+    flex: 1;
+    display: flex;
+    gap: 10px;
+    padding: 10px;
+    box-sizing: border-box;
+}
+
+/* Canvas ocupa a maior parte */
+#canvas-container {
+    flex: 1 1 auto;
+    border: 1px solid #ccc;
+    background: white;
+    min-width: 0; /* para evitar overflow */
+}
+
+/* Painel lateral de propriedades compacto e fixo em largura */
+.properties {
+    flex: 0 0 280px; /* largura fixa */
+    background: #f1f3f5;
+    border: 1px solid #ddd;
+    padding: 15px;
+    display: none; /* aparece só quando seleciona algo */
+    flex-direction: column;
+    gap: 12px;
+    font-size: 14px;
+    border-radius: 6px;
+    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+}
+
+/* Quando tem propriedades visíveis */
+.properties.active {
+    display: flex;
+}
+
+/* Labels no painel propriedades */
+.properties label {
+    display: flex;
+    flex-direction: column;
+    font-weight: 600;
+    color: #333;
+}
+
+.properties input[type="color"],
+.properties input[type="text"],
+.properties input[type="number"] {
+    margin-top: 6px;
+    padding: 6px 8px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    font-size: 14px;
+}
+
+#pages-container.horizontal {
+    flex-direction: row;
+}
+
+#pages-container.vertical {
+    flex-direction: column;
+}
+
+
+
+
+
