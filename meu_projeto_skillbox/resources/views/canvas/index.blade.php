@@ -40,22 +40,9 @@
     @endif
 
     <button id="btn-new-canvas" class="btn btn-success mt-3">➕ Novo Canvas</button>
-
-    <script>
-        document.getElementById('btn-new-canvas').addEventListener('click', () => {
-            let width = prompt('Digite a largura do canvas (mínimo 100):', '1000');
-            let height = prompt('Digite a altura do canvas (mínimo 100):', '600');
-
-            width = parseInt(width);
-            height = parseInt(height);
-
-            if (!width || width < 100) width = 1000;
-            if (!height || height < 100) height = 600;
-
-            window.location.href = `/editor?new=1&width=${width}&height=${height}`;
-        });
-    </script>
-
-
 </div>
 @endsection
+
+@push('scripts')
+<script src="{{ asset('js/canvas.index.js') }}"></script>
+@endpush

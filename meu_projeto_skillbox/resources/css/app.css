@@ -1,44 +1,65 @@
-@import "bootstrap/dist/css/bootstrap.min.css"; /* importa bootstrap */
+@import "bootstrap/dist/css/bootstrap.min.css";
+/* importa bootstrap */
 
 /* Reset básico */
 * {
-  margin: 0; /* remove margens */
-  padding: 0; /* remove padding */
-  box-sizing: border-box; /* padding e border dentro da largura */
+  margin: 0;
+  /* remove margens */
+  padding: 0;
+  /* remove padding */
+  box-sizing: border-box;
+  /* padding e border dentro da largura */
 }
 
-body, html {
-  height: 100%; /* tela cheia */
-  font-family: 'Segoe UI', sans-serif; /* fonte padrão */
+body,
+html {
+  height: 100%;
+  /* tela cheia */
+  font-family: 'Segoe UI', sans-serif;
+  /* fonte padrão */
 }
 
 .conteiner {
-  display: flex; /* sidebar + conteúdo lado a lado */
-  height: 100vh; /* altura da tela */
+  display: flex;
+  /* sidebar + conteúdo lado a lado */
+  height: 100vh;
+  /* altura da tela */
 }
 
 .sidebar {
-  width: 250px; /* largura aberta */
-  background-color: #1e1e2f; /* fundo escuro */
-  color: #fff; /* texto branco */
-  transition: width 0.3s ease; /* animação largura */
-  overflow: hidden; /* esconde conteúdo que vaza */
-  position: relative; /* para filhos absolutos */
+  width: 250px;
+  /* largura aberta */
+  background-color: #1e1e2f;
+  /* fundo escuro */
+  color: #fff;
+  /* texto branco */
+  transition: width 0.3s ease;
+  /* animação largura */
+  overflow: hidden;
+  /* esconde conteúdo que vaza */
+  position: relative;
+  /* para filhos absolutos */
 }
 
 .sidebar.collapsed {
-  width: 70px; /* largura fechada */
+  width: 70px;
+  /* largura fechada */
 }
 
 .sidebar .logo {
   position: relative;
   padding: 20px;
-  display: flex; /* botão e texto alinhados */
+  display: flex;
+  /* botão e texto alinhados */
   align-items: center;
-  gap: 12px; /* espaço entre */
-  background-color: #151523; /* fundo mais escuro */
-  border-bottom: 1px solid #333; /* separador */
-  transition: opacity 0.3s ease; /* transição suave */
+  gap: 12px;
+  /* espaço entre */
+  background-color: #151523;
+  /* fundo mais escuro */
+  border-bottom: 1px solid #333;
+  /* separador */
+  transition: opacity 0.3s ease;
+  /* transição suave */
 }
 
 .sidebar .logo button#toggle-sidebar {
@@ -48,7 +69,8 @@ body, html {
   color: #fff;
   font-size: 28px;
   padding: 0;
-  display: flex; /* centraliza ícone */
+  display: flex;
+  /* centraliza ícone */
   align-items: center;
   justify-content: center;
 }
@@ -56,8 +78,10 @@ body, html {
 /* texto do logo some na sidebar fechada */
 .sidebar.collapsed .logo h2 {
   opacity: 0;
-  pointer-events: none; /* não clicável */
-  user-select: none; /* não selecionável */
+  pointer-events: none;
+  /* não clicável */
+  user-select: none;
+  /* não selecionável */
   width: 0;
   overflow: hidden;
   transition: opacity 0.3s ease, width 0.3s ease;
@@ -71,28 +95,36 @@ body, html {
 }
 
 .menu-list {
-  list-style: none; /* remove bullets */
+  list-style: none;
+  /* remove bullets */
   display: flex;
   flex-direction: column;
   padding: 20px 0;
-  min-height: calc(100vh - 100px); /* altura da sidebar menos logo */
-  justify-content: space-between; /* espaça os itens */
+  min-height: calc(100vh - 100px);
+  /* altura da sidebar menos logo */
+  justify-content: space-between;
+  /* espaça os itens */
 }
 
 .menu-list li {
-  transition: background 0.2s; /* transição no hover */
+  transition: background 0.2s;
+  /* transição no hover */
 }
 
 .menu-list li:hover {
-  background-color: #2d2d44; /* cor no hover */
+  background-color: #2d2d44;
+  /* cor no hover */
 }
 
 .menu-list li a {
   position: relative;
   display: block;
-  padding-left: 50px; /* espaço para ícone */
-  height: 50px; /* altura fixa */
-  line-height: 50px; /* centra texto vertical */
+  padding-left: 50px;
+  /* espaço para ícone */
+  height: 50px;
+  /* altura fixa */
+  line-height: 50px;
+  /* centra texto vertical */
   color: #fff;
   text-decoration: none;
 }
@@ -102,7 +134,8 @@ body, html {
   position: absolute;
   left: 25px;
   top: 50%;
-  transform: translateY(-50%); /* centra vertical */
+  transform: translateY(-50%);
+  /* centra vertical */
   font-size: 1.2rem;
   width: 20px;
   text-align: center;
@@ -119,8 +152,10 @@ body, html {
 }
 
 .main {
-  flex: 1; /* ocupa espaço restante */
-  background-color: #f4f4f4; /* fundo claro */
+  flex: 1;
+  /* ocupa espaço restante */
+  background-color: #f4f4f4;
+  /* fundo claro */
   display: flex;
   flex-direction: column;
 }
@@ -153,7 +188,7 @@ form {
   background: #fff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -163,7 +198,7 @@ form {
   background: #f36dff;
   padding: 2rem;
   border-radius: 8px;
-  box-shadow: 0 0 12px rgba(0,0,0,0.05);
+  box-shadow: 0 0 12px rgba(0, 0, 0, 0.05);
   font-family: 'Segoe UI', sans-serif;
 }
 
@@ -195,19 +230,24 @@ input[type="checkbox"] {
 input[type="text"]:focus,
 input[type="email"]:focus,
 input[type="password"]:focus {
-  border-color: #4f46e5; /* roxo no foco */
+  border-color: #4f46e5;
+  /* roxo no foco */
   outline: none;
   box-shadow: 0 0 5px #c7d2fe;
 }
 
 .input-error {
-  color: #dc2626; /* vermelho erro */
+  color: #dc2626;
+  /* vermelho erro */
   font-size: 0.875rem;
   margin-top: 4px;
 }
 
-button, .btn, .x-primary-button {
-  background-color: #4f46e5; /* botão roxo */
+button,
+.btn,
+.x-primary-button {
+  background-color: #4f46e5;
+  /* botão roxo */
   color: white;
   padding: 10px 18px;
   font-weight: 600;
@@ -218,8 +258,11 @@ button, .btn, .x-primary-button {
   font-size: 1rem;
 }
 
-button:hover, .btn:hover, .x-primary-button:hover {
-  background-color: #4338ca; /* roxo escuro hover */
+button:hover,
+.btn:hover,
+.x-primary-button:hover {
+  background-color: #4338ca;
+  /* roxo escuro hover */
 }
 
 a {
@@ -231,23 +274,29 @@ a {
 }
 
 a:hover {
-  color: #3730a3; /* roxo escuro link hover */
+  color: #3730a3;
+  /* roxo escuro link hover */
 }
 
 .mb-4 {
-  margin-bottom: 1rem; /* espaçamento utilitário */
+  margin-bottom: 1rem;
+  /* espaçamento utilitário */
 }
 
 .text-sm {
-  font-size: 0.875rem; /* texto pequeno */
+  font-size: 0.875rem;
+  /* texto pequeno */
 }
 
 .text-gray-600 {
-  color: #4b5563; /* cinza escuro */
+  color: #4b5563;
+  /* cinza escuro */
 }
 
-.text-gray-400, .dark\:text-gray-400 {
-  color: #9ca3af; /* cinza claro */
+.text-gray-400,
+.dark\:text-gray-400 {
+  color: #9ca3af;
+  /* cinza claro */
 }
 
 .flex {
@@ -284,22 +333,26 @@ a:hover {
 }
 
 [x-data] {
-  transition: opacity 0.5s ease; /* para Alpine.js */
+  transition: opacity 0.5s ease;
+  /* para Alpine.js */
 }
 
-h1, h2 {
+h1,
+h2 {
   font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
   font-weight: 700;
   color: #1f2937;
 }
 
-.space-y-6 > * + * {
-  margin-top: 1.5rem; /* espaçamento vertical */
+.space-y-6>*+* {
+  margin-top: 1.5rem;
+  /* espaçamento vertical */
 }
 
 .max-w-xl {
   max-width: 36rem;
-  margin: 0 auto; /* centraliza horizontal */
+  margin: 0 auto;
+  /* centraliza horizontal */
 }
 
 /* Dark mode */
@@ -314,11 +367,13 @@ body.dark input {
   border-color: #374151;
 }
 
-body.dark button, body.dark .x-primary-button {
+body.dark button,
+body.dark .x-primary-button {
   background-color: #6366f1;
 }
 
-body.dark button:hover, body.dark .x-primary-button:hover {
+body.dark button:hover,
+body.dark .x-primary-button:hover {
   background-color: #4f46e5;
 }
 
@@ -338,102 +393,146 @@ body.dark button:hover, body.dark .x-primary-button:hover {
 
 /* Wrapper geral */
 .editor-wrapper {
-    display: flex;
-    flex-direction: column;
-    height: 100vh;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 /* Toolbar no topo */
 .toolbar {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-    padding: 10px;
-    background-color: #f8f9fa;
-    border-bottom: 1px solid #ddd;
-    align-items: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-bottom: 1px solid #ddd;
+  align-items: center;
 }
 
 .toolbar button,
 .toolbar input[type="file"],
 .toolbar input[type="range"] {
-    padding: 6px 12px;
-    font-size: 14px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    background: white;
-    cursor: pointer;
+  padding: 6px 12px;
+  font-size: 14px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background: white;
+  cursor: pointer;
 }
 
 .toolbar button:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+  cursor: not-allowed;
+  opacity: 0.5;
 }
 
 /* Conteúdo principal com canvas + painel propriedades lado a lado */
 .editor-main {
-    flex: 1;
-    display: flex;
-    gap: 10px;
-    padding: 10px;
-    box-sizing: border-box;
+  flex: 1;
+  display: flex;
+  gap: 10px;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 /* Canvas ocupa a maior parte */
 #canvas-container {
-    flex: 1 1 auto;
-    border: 1px solid #ccc;
-    background: white;
-    min-width: 0; /* para evitar overflow */
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #e5e7eb; /* cinza claro só pra contraste */
+  padding: 0;
+  margin: 0;
+  border: none;
+  overflow: hidden;
 }
+
+canvas {
+  display: block;
+  max-width: 100%;
+  max-height: 100%;
+  border: none;
+}
+
+
 
 /* Painel lateral de propriedades compacto e fixo em largura */
 .properties {
-    flex: 0 0 280px; /* largura fixa */
-    background: #f1f3f5;
-    border: 1px solid #ddd;
-    padding: 15px;
-    display: none; /* aparece só quando seleciona algo */
-    flex-direction: column;
-    gap: 12px;
-    font-size: 14px;
-    border-radius: 6px;
-    box-shadow: 0 0 8px rgba(0,0,0,0.05);
+  flex: 0 0 280px;
+  /* largura fixa */
+  background: #f1f3f5;
+  border: 1px solid #ddd;
+  padding: 15px;
+  display: none;
+  /* aparece só quando seleciona algo */
+  flex-direction: column;
+  gap: 12px;
+  font-size: 14px;
+  border-radius: 6px;
+  box-shadow: 0 0 8px rgba(0, 0, 0, 0.05);
 }
 
 /* Quando tem propriedades visíveis */
 .properties.active {
-    display: flex;
+  display: flex;
 }
 
 /* Labels no painel propriedades */
 .properties label {
-    display: flex;
-    flex-direction: column;
-    font-weight: 600;
-    color: #333;
+  display: flex;
+  flex-direction: column;
+  font-weight: 600;
+  color: #333;
 }
 
 .properties input[type="color"],
 .properties input[type="text"],
 .properties input[type="number"] {
-    margin-top: 6px;
-    padding: 6px 8px;
-    border-radius: 4px;
-    border: 1px solid #ccc;
-    font-size: 14px;
+  margin-top: 6px;
+  padding: 6px 8px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  font-size: 14px;
 }
 
 #pages-container.horizontal {
-    flex-direction: row;
+  flex-direction: row;
 }
 
 #pages-container.vertical {
-    flex-direction: column;
+  flex-direction: column;
 }
 
+.toolbar button.material-icons,
+.page-controls button.material-icons {
+  background-color: #3661a8;
+  /* azul clássico, firme e elegante */
 
+  color: white !important;
+  border: none !important;
+  border-radius: 6px !important;
+  padding: 6px 10px !important;
+  font-size: 18px !important;
+  font-weight: 300 !important;
+  cursor: pointer !important;
+  transition: background-color 0.25s ease !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  user-select: none !important;
+  font-family: 'Material Symbols Outlined' !important;
+  line-height: 1 !important;
+}
 
+.toolbar button.material-icons:disabled,
+.page-controls button.material-icons:disabled {
+  opacity: 0.5 !important;
+  cursor: not-allowed !important;
+}
 
-
+.toolbar button.material-icons:hover:not(:disabled),
+.page-controls button.material-icons:hover:not(:disabled) {
+  background-color: #2e4f7e !important;
+  /* azul mais escuro no hover */
+}
