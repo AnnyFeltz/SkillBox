@@ -11,23 +11,24 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('canvases', function (Blueprint $table) {
+        Schema::create('canvas_projetos', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('user_id')->nullable(); // se for por usuário
-            $table->string('title')->nullable();
-            $table->longText('data_json'); // JSON do Konva
+            $table->unsignedBigInteger('user_id');
+            $table->string('titulo')->nullable();
+            $table->longText('data_json');  // JSON pode ser grande, usa longText
+            $table->integer('width')->default(1000);
+            $table->integer('height')->default(600);
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
         });
     }
 
-
     /**
      * Reverse the migrations.
      */
     public function down(): void
     {
-        Schema::dropIfExists('canvases');
+        Schema::dropIfExists('canvas_projetos');
     }
 };

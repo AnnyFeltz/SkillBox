@@ -45,14 +45,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const rect = container.getBoundingClientRect();
 
-    // Ajusta a largura e altura do canvas em pixels
     canvas.width = rect.width;
     canvas.height = rect.height;
-
-    // Se tiver contexto e precisar redesenhar, faça aqui:
-    // const ctx = canvas.getContext('2d');
-    // ctx.clearRect(0, 0, canvas.width, canvas.height);
-    // redesenha seus elementos se precisar
   }
 
   ajustarTamanhoCanvas();

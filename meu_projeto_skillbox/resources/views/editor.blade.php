@@ -6,10 +6,16 @@
 @section('content')
 
 <script>
-    window.initialCanvasWidth = {{ json_encode($canvas->width ?? 1000) }};
-    window.initialCanvasHeight = {{ json_encode($canvas->height ?? 600) }};
-    window.initialCanvasData = {!! isset($canvas->data_json) ? $canvas->data_json : 'null' !!};
+    window.initialCanvasWidth = {!! json_encode($canvas->width ?? 1000) !!};
+    window.initialCanvasHeight = {!! json_encode($canvas->height ?? 600) !!};
+    window.initialCanvasData = {!! $canvas->data_json ?? 'null' !!};
+    window.currentCanvasId = {{ $canvas->id ?? 'null' }};
 </script>
+
+<div class="mb-3">
+    <label for="canvas-title" class="form-label">Título do projeto</label>
+    <input type="text" class="form-control" id="canvas-title" value="{{ $canvas->titulo ?? '' }}">
+</div>
 
 <div class="editor-wrapper">
     <div class="toolbar">
@@ -24,7 +30,7 @@
         <button id="save-json" class="material-icons" title="Salvar">save</button>
         <button id="load-json" class="material-icons" title="Carregar">folder_open</button>
         <button id="export-png" class="material-icons" title="Exportar PNG">image</button>
-        <label for="zoom-range">🔍 Zoom</label>
+        <label for="zoom-range" class="material-icons">zoom_out</label>
         <input
             type="range"
             id="zoom-range"
@@ -32,9 +38,11 @@
             max="2"
             step="0.1"
             value="1" />
+        <label for="zoom-range" class="material-icons">zoom_in</label>
+        <button id="reset-zoom" class="material-icons">reset_focus</button>
     </div>
 
-    <div class="page-controls" style="margin: 10px 0;">
+    <div class="page-controls">
         <button id="add-page" class="material-icons" title="Nova Página">add_box</button>
         <button id="edit-size" class="material-icons" title="Editar Tamanho">resize</button>
         <button id="delete-page" class="material-icons" title="Excluir Página" style="margin-left: 10px;">delete_forever</button>
@@ -42,12 +50,12 @@
         <div class="page-sizes" style="display: none; margin-top: 10px;">
             <label>
                 Largura da Página:
-                <input id="page-width" type="number" value="{{ $canvas->width ?? 1000 }}" min="100" step="10" />
+                <input id="page-width" type="number" value="{{ $canvasProjeto->width ?? 1000 }}" min="100" step="10" />
             </label>
 
             <label style="margin-left: 10px;">
                 Altura da Página:
-                <input id="page-height" type="number" value="{{ $canvas->height ?? 600 }}" min="100" step="10" />
+                <input id="page-height" type="number" value="{{ $canvasProjeto->height ?? 600 }}" min="100" step="10" />
             </label>
         </div>
     </div>
@@ -56,25 +64,26 @@
         <!-- Miniaturas das páginas aparecerão aqui -->
     </div>
 
-    <div class="editor-main" style="display: flex; gap: 20px;">
-        <div id="canvas-container" style="border: 1px solid #ccc; background: #eee;"></div>
-
-        <div class="properties" id="properties" style="min-width: 200px; display: none; flex-shrink: 0;">
-            <label>🎨 Cor:
-                <input type="color" id="prop-fill" />
-            </label>
-            <label>🔤 Texto:
-                <input type="text" id="prop-text" />
-            </label>
-            <label>📏 Largura:
-                <input type="number" id="prop-width" />
-            </label>
-            <label>📏 Altura:
-                <input type="number" id="prop-height" />
-            </label>
-            <label>🔠 Tamanho da Fonte:
-                <input type="number" id="prop-fontsize" />
-            </label>
+    <div class="editor-main">
+        <div id="canvas-wrapper">
+            <div id="canvas-container"></div>
+            <div class="properties" id="properties">
+                <label>🎨 Cor:
+                    <input type="color" id="prop-fill" />
+                </label>
+                <label>🔤 Texto:
+                    <input type="text" id="prop-text" />
+                </label>
+                <label>📏 Largura:
+                    <input type="number" id="prop-width" />
+                </label>
+                <label>📏 Altura:
+                    <input type="number" id="prop-height" />
+                </label>
+                <label>🔠 Tamanho da Fonte:
+                    <input type="number" id="prop-fontsize" />
+                </label>
+            </div>
         </div>
     </div>
 </div>
