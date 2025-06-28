@@ -4,8 +4,11 @@ import 'bootstrap';
 
 import '../css/app.css';
 
+import Konva from 'konva';
 
-//script to handle sidebar toggle functionality
+window.Konva = Konva;
+
+// Script para toggle da sidebar
 document.addEventListener('DOMContentLoaded', function () {
     const toggle = document.getElementById('toggle-sidebar');
     const sidebar = document.getElementById('sidebar');
@@ -19,6 +22,7 @@ document.addEventListener('DOMContentLoaded', function () {
     }
 });
 
+// Botão para criar novo canvas com prompt de tamanho
 document.addEventListener('DOMContentLoaded', () => {
     const btnNewCanvas = document.getElementById('btn-new-canvas');
 
@@ -36,21 +40,132 @@ document.addEventListener('DOMContentLoaded', () => {
     });
 });
 
+// Ajusta o tamanho do canvas no editor conforme container
 document.addEventListener('DOMContentLoaded', () => {
-  const canvas = document.getElementById('canvas');
-  const container = document.getElementById('canvas-container');
+    const canvas = document.getElementById('canvas');
+    const container = document.getElementById('canvas-container');
 
-  function ajustarTamanhoCanvas() {
-    if (!canvas || !container) return;
+    function ajustarTamanhoCanvas() {
+        if (!canvas || !container) return;
 
-    const rect = container.getBoundingClientRect();
+        const rect = container.getBoundingClientRect();
 
-    canvas.width = rect.width;
-    canvas.height = rect.height;
-  }
+        canvas.width = rect.width;
+        canvas.height = rect.height;
+    }
 
-  ajustarTamanhoCanvas();
+    ajustarTamanhoCanvas();
 
-  window.addEventListener('resize', ajustarTamanhoCanvas);
+    window.addEventListener('resize', ajustarTamanhoCanvas);
 });
 
+document.addEventListener('DOMContentLoaded', async () => {
+    const previews = document.querySelectorAll('.mini-preview');
+
+    previews.forEach(async (div) => {
+        const canvasId = div.dataset.canvasId;
+        try {
+            const response = await fetch(`/canvas/carregar?id=${canvasId}`);
+            const result = await response.json();
+
+            if (!result.data) return;
+
+            const stageWidth = 150;
+            const stageHeight = 90;
+
+            const page = result.data.pages[0];
+            const canvasW = page.width;
+            const canvasH = page.height;
+
+            const scaleX = stageWidth / canvasW;
+            const scaleY = stageHeight / canvasH;
+            const scale = Math.min(scaleX, scaleY);
+
+            // calcula o offset para centralizar
+            const offsetX = (stageWidth - canvasW * scale) / 2;
+            const offsetY = (stageHeight - canvasH * scale) / 2;
+
+
+            const stage = new Konva.Stage({
+                container: div.id,
+                width: stageWidth,
+                height: stageHeight,
+            });
+
+            const layer = new Konva.Layer();
+            stage.add(layer);
+
+            page.shapes.forEach(shape => {
+                let konvaShape = null;
+
+                const attrs = shape.attrs || {};
+                const className = shape.className;
+
+                switch (className) {
+                    case 'Rect':
+                        konvaShape = new Konva.Rect({
+                            x: attrs.x * scale + offsetX,
+                            y: attrs.y * scale + offsetY,
+                            width: attrs.width * scale,
+                            height: attrs.height * scale,
+                            fill: attrs.fill || 'gray',
+                            stroke: attrs.stroke || 'black',
+                            strokeWidth: (attrs.strokeWidth || 1) * scale,
+                        });
+                        break;
+
+                    case 'Circle':
+                        konvaShape = new Konva.Circle({
+                            x: attrs.x * scale + offsetX,
+                            y: attrs.y * scale + offsetY,
+                            radius: attrs.radius * scale,
+                            fill: attrs.fill || 'gray',
+                            stroke: attrs.stroke || 'black',
+                            strokeWidth: (attrs.strokeWidth || 1) * scale,
+                        });
+                        break;
+
+                    case 'Text':
+                        konvaShape = new Konva.Text({
+                            x: attrs.x * scale + offsetX,
+                            y: attrs.y * scale + offsetY,
+
+                            text: attrs.text || '',
+                            fontSize: (attrs.fontSize || 18) * scale,
+                            fill: attrs.fill || 'black',
+                        });
+                        break;
+
+                    case 'Image':
+                        if (attrs.imageBase64) {
+                            const imageObj = new Image();
+                            imageObj.onload = () => {
+                                konvaShape = new Konva.Image({
+                                    ...attrs,
+                                    x: attrs.x * scale + offsetX,
+                                    y: attrs.y * scale + offsetY,
+                                    width: attrs.width * scale,
+                                    height: attrs.height * scale,
+                                    image: imageObj,
+                                });
+                                layer.add(konvaShape);
+                                layer.draw();
+                            };
+                            imageObj.src = attrs.imageBase64;
+                            return; // Sai do forEach para evitar add duplicado antes do load
+                        }
+                        break;
+                }
+
+                if (konvaShape) {
+                    layer.add(konvaShape);
+                }
+            });
+
+
+            layer.draw();
+        } catch (err) {
+            console.error('Erro ao carregar miniatura:', err);
+        }
+    });
+});

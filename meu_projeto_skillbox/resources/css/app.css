@@ -559,3 +559,8 @@ canvas {
   background-color: #2e4f7e !important;
   /* azul mais escuro no hover */
 }
+
+.mini-preview canvas {
+    border-radius: 4px;
+    box-shadow: 0 0 3px rgba(0,0,0,0.2);
+}

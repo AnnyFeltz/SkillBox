@@ -17,12 +17,13 @@
                 <th>Título</th>
                 <th>Data</th>
                 <th>Ações</th>
+                <th>Miniatura</th>
             </tr>
         </thead>
         <tbody>
             @foreach ($canvases as $canvas)
             <tr>
-                <td>{{ $canvas->title }}</td>
+                <td>{{ $canvas->titulo }}</td>
                 <td>{{ $canvas->created_at->format('d/m/Y H:i') }}</td>
                 <td>
                     <a href="{{ url('/editor?id=' . $canvas->id) }}" class="btn btn-sm btn-primary">Abrir</a>
@@ -33,6 +34,13 @@
                         <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Tem certeza?')">Excluir</button>
                     </form>
                 </td>
+                <td>
+                    <div id="preview-{{ $canvas->id }}"
+                        class="mini-preview"
+                        data-canvas-id="{{ $canvas->id }}"
+                        style="aspect-ratio: {{ $canvas->width }} / {{ $canvas->height }}; width: 150px; max-height: 90px; border: 1px solid #ccc; overflow: hidden;
+                        "></div>
+                </td>
             </tr>
             @endforeach
         </tbody>
@@ -42,7 +50,3 @@
     <button id="btn-new-canvas" class="btn btn-success mt-3">➕ Novo Canvas</button>
 </div>
 @endsection
-
-@push('scripts')
-<script src="{{ asset('js/canvas.index.js') }}"></script>
-@endpush

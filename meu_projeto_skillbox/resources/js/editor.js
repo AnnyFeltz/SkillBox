@@ -1,7 +1,6 @@
 import Konva from 'konva';
 
 document.addEventListener('DOMContentLoaded', () => {
-    // Inicialização
     let pages = [];
     let activePageIndex = 0;
     let pageWidth = window.initialCanvasWidth || 1000;
@@ -17,13 +16,13 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.style.width = '100vw';
         wrapper.style.height = '100vh';
         wrapper.style.overflow = 'hidden';
+        
     }
 
     canvasContainer.style.backgroundColor = '#eee';
     canvasContainer.style.margin = 'auto';
     canvasContainer.style.overflow = 'hidden';
 
-    // Inicializa o stage vazio (com dimensões padrão)
     let stage = new Konva.Stage({
         container: 'canvas-container',
         width: pageWidth,
@@ -68,7 +67,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     layer.add(tr);
 
-    // Função para atualizar painel de propriedades
     function updatePropertiesPanel(shape) {
         const panel = document.getElementById('properties');
         if (!shape) {
@@ -103,7 +101,6 @@ document.addEventListener('DOMContentLoaded', () => {
         layer.draw();
     });
 
-    // Atualiza propriedades dos shapes e salva automaticamente
     function updateAndSave() {
         layer.batchDraw();
         saveCurrentPageShapes();
@@ -154,7 +151,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Zoom via range e scroll + ctrl
     const zoomRange = document.getElementById('zoom-range');
     if (zoomRange) {
         zoomRange.addEventListener('input', (e) => {
@@ -208,8 +204,6 @@ document.addEventListener('DOMContentLoaded', () => {
         zoomRange.value = newScale.toFixed(2);
     });
 
-    // Histórico simplificado removido para focar no salvamento
-
     function createNewPage() {
         const newPage = {
             id: pages.length + 1,
@@ -256,22 +250,51 @@ document.addEventListener('DOMContentLoaded', () => {
         layer.add(paperRect);
         paperRect.moveToBottom();
 
-        page.shapes.forEach(shapeJSON => {
-            const shape = Konva.Node.create(shapeJSON);
-            layer.add(shape);
+        const shapesToLoad = page.shapes || [];
+        let imagesToLoad = 0;
+        let imagesLoaded = 0;
+
+        function checkAllImagesLoaded() {
+            if (imagesLoaded >= imagesToLoad) {
+                deselect();
+                layer.draw();
+                renderPageThumbnails();
+            }
+        }
+
+        shapesToLoad.forEach(shapeJSON => {
+            if (shapeJSON.className === 'Image' && shapeJSON.attrs.imageBase64) {
+                imagesToLoad++;
+                const imageObj = new Image();
+                imageObj.onload = () => {
+                    const konvaImage = new Konva.Image({
+                        ...shapeJSON.attrs,
+                        image: imageObj,
+                    });
+                    layer.add(konvaImage);
+                    imagesLoaded++;
+                    checkAllImagesLoaded();
+                };
+                imageObj.src = shapeJSON.attrs.imageBase64;
+            } else {
+                const shape = Konva.Node.create(shapeJSON);
+                layer.add(shape);
+            }
         });
 
-        deselect();
-        layer.draw();
-        renderPageThumbnails();
+        if (imagesToLoad === 0) {
+            deselect();
+            layer.draw();
+            renderPageThumbnails();
+        }
     }
+
 
     function saveCurrentPageShapes() {
-        const shapes = layer.getChildren(shape => {
-            return shape !== paperRect && !(shape instanceof Konva.Transformer);
-        });
-        pages[activePageIndex].shapes = shapes.map(s => s.toJSON());
+        pages[activePageIndex].shapes = getShapesJsonWithImages();
     }
+
+
 
     function renderPageThumbnails() {
         const container = document.getElementById('pages-container');
@@ -309,7 +332,6 @@ document.addEventListener('DOMContentLoaded', () => {
         salvarNoServidor();
     }
 
-    // Formas básicas adicionadas
     function addRectangle() {
         const rect = new Konva.Rect({
             x: 50,
@@ -382,7 +404,6 @@ document.addEventListener('DOMContentLoaded', () => {
         reader.readAsDataURL(file);
     }
 
-    // Eventos dos botões e inputs
     document.getElementById('add-rect').addEventListener('click', addRectangle);
     document.getElementById('add-circle').addEventListener('click', addCircle);
     document.getElementById('add-text').addEventListener('click', addText);
@@ -444,6 +465,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     document.getElementById('export-png').addEventListener('click', () => {
         saveCurrentPageShapes();
+
+        const oldScale = stage.scaleX();
+        const oldPos = stage.position();
+
+        stage.scale({ x: 1, y: 1 });
+        stage.position({ x: 0, y: 0 });
+        stage.batchDraw();
+
         stage.toDataURL({
             mimeType: 'image/png',
             callback: function (dataUrl) {
@@ -453,9 +482,14 @@ document.addEventListener('DOMContentLoaded', () => {
                 document.body.appendChild(a);
                 a.click();
                 a.remove();
+
+                stage.scale({ x: oldScale, y: oldScale });
+                stage.position(oldPos);
+                stage.batchDraw();
             }
         });
     });
+
     document.getElementById('edit-size').addEventListener('click', () => {
         const pageSizesDiv = document.querySelector('.page-sizes');
         pageSizesDiv.style.display = (pageSizesDiv.style.display === 'none' || !pageSizesDiv.style.display) ? 'block' : 'none';
@@ -501,7 +535,6 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    // Salva no servidor
     function salvarNoServidor(isManual = false) {
         saveCurrentPageShapes();
 
@@ -529,7 +562,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(response => {
                 if (response.success) {
-                    window.currentCanvasId = response.id; // guarda o id para futuras atualizações
+                    window.currentCanvasId = response.id; 
                     if (isManual) {
                         alert('Canvas salvo com sucesso!');
                     }
@@ -545,7 +578,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
 
-    // Carrega do servidor o último canvas salvo
+
     function carregarCanvasSalvo() {
         if (!window.currentCanvasId) {
             criarCanvasInicial();
@@ -587,21 +620,16 @@ document.addEventListener('DOMContentLoaded', () => {
             });
     }
 
-    // Função para obter JSON com imagens
     function getShapesJsonWithImages() {
         return layer.getChildren(shape => shape !== paperRect && !(shape instanceof Konva.Transformer)).map(shape => {
             const json = JSON.parse(shape.toJSON());
             if (shape.className === 'Image' && shape.image()) {
-                json.attrs.imageBase64 = shape.image().src; // adiciona a base64 da imagem
+                json.attrs.imageBase64 = shape.image().src; 
             }
             return json;
         });
     }
 
-
-
-
-    // Cria canvas inicial vazio
     function criarCanvasInicial() {
         pages = [{
             id: 1,
@@ -614,6 +642,5 @@ document.addEventListener('DOMContentLoaded', () => {
         renderPageThumbnails();
     }
 
-    // Inicia carregamento
     carregarCanvasSalvo();
 });

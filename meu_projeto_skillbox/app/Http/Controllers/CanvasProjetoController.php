@@ -70,6 +70,7 @@ class CanvasProjetoController extends Controller
         if ($id) {
             $canvas = CanvasProjeto::where('user_id', $userId)->findOrFail($id);
             $canvas->update([
+                'titulo' => $request->input('titulo'),
                 'data_json' => $request->input('data_json'),
                 'width' => $request->input('width'),
                 'height' => $request->input('height'),
