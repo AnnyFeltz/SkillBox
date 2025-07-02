@@ -70,21 +70,25 @@ document.addEventListener('DOMContentLoaded', async () => {
 
             if (!result.data) return;
 
-            const stageWidth = 150;
-            const stageHeight = 90;
-
+            const previewMaxWidth = 150;
             const page = result.data.pages[0];
             const canvasW = page.width;
             const canvasH = page.height;
+
+            const aspectRatio = canvasW / canvasH;
+            const stageWidth = previewMaxWidth;
+            const stageHeight = previewMaxWidth / aspectRatio;
+
+            // Ajusta o tamanho do container da miniatura
+            div.style.width = `${stageWidth}px`;
+            div.style.height = `${stageHeight}px`;
 
             const scaleX = stageWidth / canvasW;
             const scaleY = stageHeight / canvasH;
             const scale = Math.min(scaleX, scaleY);
 
-            // calcula o offset para centralizar
             const offsetX = (stageWidth - canvasW * scale) / 2;
             const offsetY = (stageHeight - canvasH * scale) / 2;
-
 
             const stage = new Konva.Stage({
                 container: div.id,
@@ -129,7 +133,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                         konvaShape = new Konva.Text({
                             x: attrs.x * scale + offsetX,
                             y: attrs.y * scale + offsetY,
-
                             text: attrs.text || '',
                             fontSize: (attrs.fontSize || 18) * scale,
                             fill: attrs.fill || 'black',
@@ -152,7 +155,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                                 layer.draw();
                             };
                             imageObj.src = attrs.imageBase64;
-                            return; // Sai do forEach para evitar add duplicado antes do load
+                            return;
                         }
                         break;
                 }
@@ -161,7 +164,6 @@ document.addEventListener('DOMContentLoaded', async () => {
                     layer.add(konvaShape);
                 }
             });
-
 
             layer.draw();
         } catch (err) {

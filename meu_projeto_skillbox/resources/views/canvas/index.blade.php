@@ -1,4 +1,9 @@
 @extends('layouts.skillboxApp')
+@section('title', 'Meus Projetos')
+
+@section('vite')
+@vite('resources/js/app.js')
+@endsection
 
 @section('content')
 <div class="container">
@@ -38,8 +43,7 @@
                     <div id="preview-{{ $canvas->id }}"
                         class="mini-preview"
                         data-canvas-id="{{ $canvas->id }}"
-                        style="aspect-ratio: {{ $canvas->width }} / {{ $canvas->height }}; width: 150px; max-height: 90px; border: 1px solid #ccc; overflow: hidden;
-                        "></div>
+                        style="aspect-ratio: {{ $canvas->height != 0 ? ($canvas->width / $canvas->height) : 1 }}; width: 150px; border: 1px solid #ccc; overflow: hidden;"></div>
                 </td>
             </tr>
             @endforeach
@@ -49,4 +53,10 @@
 
     <button id="btn-new-canvas" class="btn btn-success mt-3">➕ Novo Canvas</button>
 </div>
+@endsection
+
+@section('menu-items')
+<li><a href="/dashboard"><i class="icon-dashboard material-symbols-outlined">dashboard</i> <span class="label">Dashboard</span></a></li>
+<li><a href="/profile"><i class="icon-user material-symbols-outlined">account_circle</i> <span class="label">Perfil</span></a></li>
+<li><a href="/canvas"><i class="icon-user material-symbols-outlined">wall_art</i> <span class="label">Canvas</span></a></li>
 @endsection

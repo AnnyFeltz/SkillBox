@@ -3,6 +3,10 @@
 @section('title', 'Editor Visual')
 @section('titulo', 'Editor Visual')
 
+@section('vite')
+@vite('resources/js/editor.js')
+@endsection
+
 @section('content')
 
 <script>
@@ -88,4 +92,10 @@
     </div>
 </div>
 
+@endsection
+
+@section('menu-items')
+<li><a href="/dashboard"><i class="icon-dashboard material-symbols-outlined">dashboard</i> <span class="label">Dashboard</span></a></li>
+<li><a href="/profile"><i class="icon-user material-symbols-outlined">account_circle</i> <span class="label">Perfil</span></a></li>
+<li><a href="/canvas"><i class="icon-user material-symbols-outlined">wall_art</i> <span class="label">Canvas</span></a></li>
 @endsection

@@ -1,12 +1,18 @@
 import Konva from 'konva';
 
+console.log('Konva importado:', Konva);
+console.log('Elementos no DOM:', document.getElementById('canvas-container'));
+console.log('Dimensões iniciais:', window.initialCanvasWidth, window.initialCanvasHeight);
+
 document.addEventListener('DOMContentLoaded', () => {
     let pages = [];
     let activePageIndex = 0;
     let pageWidth = window.initialCanvasWidth || 1000;
     let pageHeight = window.initialCanvasHeight || 600;
+    let history = [];
+    let historyStep = -1;
 
-
+    const maxHistory = 50; // limita o número de estados guardados pra economizar memória
     const canvasContainer = document.getElementById('canvas-container');
     const wrapper = document.getElementById('canvas-wrapper');
     if (wrapper) {
@@ -16,7 +22,6 @@ document.addEventListener('DOMContentLoaded', () => {
         wrapper.style.width = '100vw';
         wrapper.style.height = '100vh';
         wrapper.style.overflow = 'hidden';
-        
     }
 
     canvasContainer.style.backgroundColor = '#eee';
@@ -89,23 +94,93 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     stage.on('click', (e) => {
-        if (e.target === stage || e.target === paperRect) {
+        const target = e.target;
+
+        if (target === stage || target === paperRect) {
             deselect();
             layer.draw();
             return;
         }
-        selectedShape = e.target;
-        tr.nodes([selectedShape]);
-        updatePropertiesPanel(selectedShape);
-        document.getElementById('delete-selected').disabled = false;
-        layer.draw();
+
+        if (target instanceof Konva.Shape && target !== tr && target !== paperRect) {
+            selectedShape = target;
+            tr.nodes([selectedShape]);
+            layer.draw();
+
+            updatePropertiesPanel(selectedShape);
+            document.getElementById('delete-selected').disabled = false;
+        } else {
+            deselect();
+            layer.draw();
+        }
+
     });
+
+    function saveHistory() {
+        if (historyStep < history.length - 1) {
+            history = history.slice(0, historyStep + 1);
+        }
+        const currentState = JSON.stringify(pages);
+        history.push(currentState);
+
+        if (history.length > maxHistory) {
+            history.shift();
+        } else {
+            historyStep++;
+        }
+
+        updateUndoRedoButtons();
+    }
+
+    function undo() {
+        if (historyStep > 0) {
+            historyStep--;
+            restoreHistory(history[historyStep]);
+        }
+        updateUndoRedoButtons();
+    }
+
+    function redo() {
+        if (historyStep < history.length - 1) {
+            historyStep++;
+            restoreHistory(history[historyStep]);
+        }
+        updateUndoRedoButtons();
+    }
+
+    function updateUndoRedoButtons() {
+        document.getElementById('undo').disabled = historyStep <= 0;
+        document.getElementById('redo').disabled = historyStep >= history.length - 1;
+    }
+
+
+    function restoreHistory(stateJson) {
+        try {
+            const state = JSON.parse(stateJson);
+            pages = state;
+            activePageIndex = Math.min(activePageIndex, pages.length - 1);
+            loadPage(activePageIndex);
+            renderPageThumbnails();
+        } catch (e) {
+            console.error('Erro ao restaurar estado do histórico:', e);
+        }
+    }
+
 
     function updateAndSave() {
         layer.batchDraw();
         saveCurrentPageShapes();
         salvarNoServidor();
     }
+
+    document.getElementById('undo').addEventListener('click', () => {
+        undo();
+    });
+
+    document.getElementById('redo').addEventListener('click', () => {
+        redo();
+    });
+
 
     document.getElementById('prop-fill').addEventListener('input', (e) => {
         if (selectedShape && selectedShape.fill) {
@@ -201,7 +276,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stage.position(newPos);
         stage.batchDraw();
-        zoomRange.value = newScale.toFixed(2);
+        if (zoomRange) zoomRange.value = newScale.toFixed(2);
     });
 
     function createNewPage() {
@@ -247,7 +322,9 @@ document.addEventListener('DOMContentLoaded', () => {
         paperRect.height(pageHeight);
 
         layer.destroyChildren();
+
         layer.add(paperRect);
+        layer.add(tr);
         paperRect.moveToBottom();
 
         const shapesToLoad = page.shapes || [];
@@ -272,6 +349,18 @@ document.addEventListener('DOMContentLoaded', () => {
                         image: imageObj,
                     });
                     layer.add(konvaImage);
+
+                    konvaImage.on('click', () => {
+                        selectedShape = konvaImage;
+                        tr.nodes([]);
+                        tr.nodes([selectedShape]);
+                        console.log('Selecionado:', selectedShape);
+                        console.log('Transformer nodes:', tr.nodes());
+                        updatePropertiesPanel(selectedShape);
+                        document.getElementById('delete-selected').disabled = false;
+                        layer.draw();
+                    });
+
                     imagesLoaded++;
                     checkAllImagesLoaded();
                 };
@@ -279,6 +368,17 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 const shape = Konva.Node.create(shapeJSON);
                 layer.add(shape);
+
+                shape.on('click', (e) => {
+                    selectedShape = shape;
+                    tr.nodes([]);
+                    tr.nodes([selectedShape]);
+                    console.log('Selecionado:', selectedShape);
+                    console.log('Transformer nodes:', tr.nodes());
+                    updatePropertiesPanel(selectedShape);
+                    document.getElementById('delete-selected').disabled = false;
+                    layer.draw();
+                });
             }
         });
 
@@ -287,14 +387,19 @@ document.addEventListener('DOMContentLoaded', () => {
             layer.draw();
             renderPageThumbnails();
         }
-    }
 
+        if (selectedShape && selectedShape.getParent()) {
+            tr.nodes([selectedShape]);
+        } else {
+            deselect();
+        }
+
+        layer.draw();
+    }
 
     function saveCurrentPageShapes() {
         pages[activePageIndex].shapes = getShapesJsonWithImages();
     }
-
-
 
     function renderPageThumbnails() {
         const container = document.getElementById('pages-container');
@@ -413,15 +518,28 @@ document.addEventListener('DOMContentLoaded', () => {
             e.target.value = '';
         }
     });
-    document.getElementById('delete-selected').addEventListener('click', () => {
-        if (selectedShape) {
-            selectedShape.destroy();
+
+    function safeDestroy(shape) {
+        if (!shape) return;
+        if (shape._isDragging) {
+            // Se estiver sendo arrastada, tenta de novo depois de 50ms
+            setTimeout(() => safeDestroy(shape), 50);
+        } else {
+            shape.destroy();
             deselect();
             layer.draw();
             saveCurrentPageShapes();
             salvarNoServidor();
         }
+    }
+
+    document.getElementById('delete-selected').addEventListener('click', () => {
+        if (selectedShape) {
+            tr.nodes([]);
+            safeDestroy(selectedShape);
+        }
     });
+
     document.getElementById('clear-all').addEventListener('click', () => {
         layer.destroyChildren();
         layer.add(paperRect);
@@ -431,6 +549,7 @@ document.addEventListener('DOMContentLoaded', () => {
         pages[activePageIndex].shapes = [];
         salvarNoServidor();
     });
+
     document.getElementById('save-json').addEventListener('click', () => {
         saveCurrentPageShapes();
         salvarNoServidor(true);
@@ -463,6 +582,7 @@ document.addEventListener('DOMContentLoaded', () => {
         };
         input.click();
     });
+
     document.getElementById('export-png').addEventListener('click', () => {
         saveCurrentPageShapes();
 
@@ -494,18 +614,22 @@ document.addEventListener('DOMContentLoaded', () => {
         const pageSizesDiv = document.querySelector('.page-sizes');
         pageSizesDiv.style.display = (pageSizesDiv.style.display === 'none' || !pageSizesDiv.style.display) ? 'block' : 'none';
     });
+
     document.getElementById('page-width').addEventListener('change', (e) => {
         const val = parseInt(e.target.value);
         if (val >= 100) updatePageSizes(val, pageHeight);
     });
+
     document.getElementById('page-height').addEventListener('change', (e) => {
         const val = parseInt(e.target.value);
         if (val >= 100) updatePageSizes(pageWidth, val);
     });
+
     document.getElementById('add-page').addEventListener('click', () => {
         saveCurrentPageShapes();
         createNewPage();
     });
+
     document.getElementById('delete-page').addEventListener('click', () => deleteCurrentPage());
 
     document.addEventListener('keydown', (e) => {
@@ -562,7 +686,7 @@ document.addEventListener('DOMContentLoaded', () => {
             .then(res => res.json())
             .then(response => {
                 if (response.success) {
-                    window.currentCanvasId = response.id; 
+                    window.currentCanvasId = response.id;
                     if (isManual) {
                         alert('Canvas salvo com sucesso!');
                     }
@@ -576,8 +700,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 if (isManual) alert('Erro de conexão ao salvar canvas.');
             });
     }
-
-
 
     function carregarCanvasSalvo() {
         if (!window.currentCanvasId) {
@@ -624,7 +746,7 @@ document.addEventListener('DOMContentLoaded', () => {
         return layer.getChildren(shape => shape !== paperRect && !(shape instanceof Konva.Transformer)).map(shape => {
             const json = JSON.parse(shape.toJSON());
             if (shape.className === 'Image' && shape.image()) {
-                json.attrs.imageBase64 = shape.image().src; 
+                json.attrs.imageBase64 = shape.image().src;
             }
             return json;
         });
