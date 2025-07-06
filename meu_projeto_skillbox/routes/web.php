@@ -6,14 +6,11 @@ use App\Http\Controllers\CanvasProjetoController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsNotAdmin;
 
-// Página pública
 Route::get('/', function () {
     return view('home');
 });
 
-// Rotas para todos os usuários autenticados
 Route::middleware(['auth'])->group(function () {
-
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
@@ -26,14 +23,12 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/canvas/{id}', [CanvasProjetoController::class, 'destroy'])->name('canvas.destroy');
 });
 
-// Rotas para usuários comuns
 Route::middleware(['auth', 'verified', IsNotAdmin::class])->group(function () {
     Route::get('/dashboard', function () {
         return view('dashboard');
     })->name('dashboard');
 });
 
-// Rotas para admin
 Route::middleware(['auth', IsAdmin::class])->group(function () {
     Route::get('/admin', function () {
         return view('admin.dashboard');

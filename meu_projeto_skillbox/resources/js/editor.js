@@ -9,10 +9,7 @@ document.addEventListener('DOMContentLoaded', () => {
     let activePageIndex = 0;
     let pageWidth = window.initialCanvasWidth || 1000;
     let pageHeight = window.initialCanvasHeight || 600;
-    let history = [];
-    let historyStep = -1;
 
-    const maxHistory = 50; // limita o número de estados guardados pra economizar memória
     const canvasContainer = document.getElementById('canvas-container');
     const wrapper = document.getElementById('canvas-wrapper');
     if (wrapper) {
@@ -114,71 +111,6 @@ document.addEventListener('DOMContentLoaded', () => {
             layer.draw();
         }
 
-    });
-
-    function saveHistory() {
-        if (historyStep < history.length - 1) {
-            history = history.slice(0, historyStep + 1);
-        }
-        const currentState = JSON.stringify(pages);
-        history.push(currentState);
-
-        if (history.length > maxHistory) {
-            history.shift();
-        } else {
-            historyStep++;
-        }
-
-        updateUndoRedoButtons();
-    }
-
-    function undo() {
-        if (historyStep > 0) {
-            historyStep--;
-            restoreHistory(history[historyStep]);
-        }
-        updateUndoRedoButtons();
-    }
-
-    function redo() {
-        if (historyStep < history.length - 1) {
-            historyStep++;
-            restoreHistory(history[historyStep]);
-        }
-        updateUndoRedoButtons();
-    }
-
-    function updateUndoRedoButtons() {
-        document.getElementById('undo').disabled = historyStep <= 0;
-        document.getElementById('redo').disabled = historyStep >= history.length - 1;
-    }
-
-
-    function restoreHistory(stateJson) {
-        try {
-            const state = JSON.parse(stateJson);
-            pages = state;
-            activePageIndex = Math.min(activePageIndex, pages.length - 1);
-            loadPage(activePageIndex);
-            renderPageThumbnails();
-        } catch (e) {
-            console.error('Erro ao restaurar estado do histórico:', e);
-        }
-    }
-
-
-    function updateAndSave() {
-        layer.batchDraw();
-        saveCurrentPageShapes();
-        salvarNoServidor();
-    }
-
-    document.getElementById('undo').addEventListener('click', () => {
-        undo();
-    });
-
-    document.getElementById('redo').addEventListener('click', () => {
-        redo();
     });
 
 
@@ -302,6 +234,24 @@ document.addEventListener('DOMContentLoaded', () => {
         if (activePageIndex >= pages.length) activePageIndex = pages.length - 1;
         renderPageThumbnails();
         loadPage(activePageIndex);
+        salvarNoServidor();
+    }
+
+    function restoreHistory(stateJson) {
+        try {
+            const state = JSON.parse(stateJson);
+            pages = state;
+            activePageIndex = Math.min(activePageIndex, pages.length - 1);
+            loadPage(activePageIndex);
+            renderPageThumbnails();
+        } catch (e) {
+            console.error('Erro ao restaurar estado do histórico:', e);
+        }
+    }
+
+    function updateAndSave() {
+        layer.batchDraw();
+        saveCurrentPageShapes();
         salvarNoServidor();
     }
 
