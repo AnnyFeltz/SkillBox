@@ -290,7 +290,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
 
         shapesToLoad.forEach(shapeJSON => {
-            if (shapeJSON.className === 'Image' && shapeJSON.attrs.imageBase64) {
+            if (shapeJSON.className === 'Image' && shapeJSON.attrs.imageUrl) {
                 imagesToLoad++;
                 const imageObj = new Image();
                 imageObj.onload = () => {
@@ -302,10 +302,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
                     konvaImage.on('click', () => {
                         selectedShape = konvaImage;
-                        tr.nodes([]);
                         tr.nodes([selectedShape]);
-                        console.log('Selecionado:', selectedShape);
-                        console.log('Transformer nodes:', tr.nodes());
                         updatePropertiesPanel(selectedShape);
                         document.getElementById('delete-selected').disabled = false;
                         layer.draw();
@@ -314,23 +311,21 @@ document.addEventListener('DOMContentLoaded', () => {
                     imagesLoaded++;
                     checkAllImagesLoaded();
                 };
-                imageObj.src = shapeJSON.attrs.imageBase64;
+                imageObj.src = shapeJSON.attrs.imageUrl;
             } else {
                 const shape = Konva.Node.create(shapeJSON);
                 layer.add(shape);
 
-                shape.on('click', (e) => {
+                shape.on('click', () => {
                     selectedShape = shape;
-                    tr.nodes([]);
                     tr.nodes([selectedShape]);
-                    console.log('Selecionado:', selectedShape);
-                    console.log('Transformer nodes:', tr.nodes());
                     updatePropertiesPanel(selectedShape);
                     document.getElementById('delete-selected').disabled = false;
                     layer.draw();
                 });
             }
         });
+
 
         if (imagesToLoad === 0) {
             deselect();
@@ -436,28 +431,62 @@ document.addEventListener('DOMContentLoaded', () => {
         salvarNoServidor();
     }
 
-    function uploadImage(file) {
-        const reader = new FileReader();
-        reader.onload = function (e) {
-            const imageObj = new Image();
-            imageObj.onload = function () {
-                const konvaImage = new Konva.Image({
-                    x: 50,
-                    y: 50,
-                    image: imageObj,
-                    width: imageObj.width / 2,
-                    height: imageObj.height / 2,
-                    draggable: true,
-                });
-                layer.add(konvaImage);
-                layer.draw();
-                saveCurrentPageShapes();
-                salvarNoServidor();
-            };
-            imageObj.src = e.target.result;
-        };
-        reader.readAsDataURL(file);
+    const IMGBB_API_KEY = window.IMGBB_API_KEY;
+
+    async function uploadImage(file) {
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+
+            if (data.success) {
+                const imageUrl = data.data.url;
+
+                const imageObj = new Image();
+                imageObj.onload = function () {
+                    const konvaImage = new Konva.Image({
+                        x: 50,
+                        y: 50,
+                        image: imageObj,
+                        width: imageObj.width / 2,
+                        height: imageObj.height / 2,
+                        draggable: true,
+                    });
+                    layer.add(konvaImage);
+                    layer.draw();
+
+                    pages[activePageIndex].shapes.push({
+                        className: 'Image',
+                        attrs: {
+                            imageUrl: imageUrl,
+                            x: 50,
+                            y: 50,
+                            width: imageObj.width / 2,
+                            height: imageObj.height / 2,
+                            draggable: true
+                        }
+                    });
+
+                    saveCurrentPageShapes();
+                    salvarNoServidor();
+                };
+                imageObj.src = imageUrl;
+            } else {
+                alert('Erro ao enviar imagem para ImgBB: ' + (data.error.message || 'Desconhecido'));
+            }
+        } catch (error) {
+            console.error('Erro no upload da imagem:', error);
+            alert('Erro ao enviar imagem para ImgBB.');
+        }
     }
+
+
 
     document.getElementById('add-rect').addEventListener('click', addRectangle);
     document.getElementById('add-circle').addEventListener('click', addCircle);
@@ -609,7 +638,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     });
 
-    function salvarNoServidor(isManual = false) {
+    async function salvarNoServidor(isManual = false) {
         saveCurrentPageShapes();
 
         const titulo = document.getElementById('canvas-title')?.value || 'Projeto salvo';
@@ -619,37 +648,51 @@ document.addEventListener('DOMContentLoaded', () => {
             activePageIndex: activePageIndex
         };
 
-        fetch('/canvas/salvar', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
-            },
-            body: JSON.stringify({
-                id: window.currentCanvasId || null,
-                titulo: titulo,
-                data_json: JSON.stringify(data),
-                width: pageWidth,
-                height: pageHeight
-            })
-        })
-            .then(res => res.json())
-            .then(response => {
-                if (response.success) {
-                    window.currentCanvasId = response.id;
-                    if (isManual) {
-                        alert('Canvas salvo com sucesso!');
-                    }
-                } else {
-                    if (isManual) {
-                        alert('Erro ao salvar canvas.');
-                    }
-                }
-            })
-            .catch(() => {
-                if (isManual) alert('Erro de conexão ao salvar canvas.');
+        try {
+            const response = await fetch('https://api.mocky.io/api/mock', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
             });
+
+            const result = await response.json();
+
+            if (!result || !result.mockUrl) {
+                throw new Error('Erro ao gerar link do Mocky');
+            }
+
+            const jsonUrl = result.mockUrl;
+
+            const saveResponse = await fetch('/canvas/salvar', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    id: window.currentCanvasId || null,
+                    titulo: titulo,
+                    data_json: jsonUrl,
+                    width: pageWidth,
+                    height: pageHeight
+                })
+            });
+
+            const saveResult = await saveResponse.json();
+
+            if (saveResult.success) {
+                window.currentCanvasId = saveResult.id;
+                if (isManual) alert('Canvas salvo com sucesso!');
+            } else if (isManual) {
+                alert('Erro ao salvar canvas.');
+            }
+
+        } catch (err) {
+            console.error('Erro ao salvar com Mocky:', err);
+            if (isManual) alert('Erro ao salvar canvas no Mocky ou servidor.');
+        }
     }
+
 
     function carregarCanvasSalvo() {
         if (!window.currentCanvasId) {
@@ -696,11 +739,13 @@ document.addEventListener('DOMContentLoaded', () => {
         return layer.getChildren(shape => shape !== paperRect && !(shape instanceof Konva.Transformer)).map(shape => {
             const json = JSON.parse(shape.toJSON());
             if (shape.className === 'Image' && shape.image()) {
-                json.attrs.imageBase64 = shape.image().src;
+                json.attrs.imageUrl = shape.image().src;
+                delete json.attrs.imageBase64;
             }
             return json;
         });
     }
+
 
     function criarCanvasInicial() {
         pages = [{

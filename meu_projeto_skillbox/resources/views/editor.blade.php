@@ -10,6 +10,7 @@
 @section('content')
 
 <script>
+    window.IMGBB_API_KEY = "{{ $apiKey }}";
     window.initialCanvasWidth = {!! json_encode($canvas->width ?? 1000) !!};
     window.initialCanvasHeight = {!! json_encode($canvas->height ?? 600) !!};
     window.initialCanvasData = {!! $canvas->data_json ?? 'null' !!};

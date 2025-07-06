@@ -8,7 +8,6 @@ use Illuminate\Support\Facades\Auth;
 
 class CanvasProjetoController extends Controller
 {
-    // Mostrar lista dos projetos do usuário
     public function index()
     {
         $userId = Auth::id();
@@ -16,7 +15,6 @@ class CanvasProjetoController extends Controller
         return view('canvas.index', compact('canvases'));
     }
 
-    // Editor: criar novo ou abrir existente
     public function editor(Request $request)
     {
         $id = $request->query('id');
@@ -50,10 +48,10 @@ class CanvasProjetoController extends Controller
             abort(404, 'Projeto não encontrado');
         }
 
-        return view('editor', compact('canvas'));
+        $apiKey = env('IMGBB_API_KEY');
+        return view('editor', compact('canvas', 'apiKey'));
     }
 
-    // Salvar ou atualizar projeto via AJAX
     public function salvar(Request $request)
     {
         $userId = Auth::id();
@@ -65,21 +63,26 @@ class CanvasProjetoController extends Controller
             'id' => 'nullable|integer|exists:canvas_projetos,id',
         ]);
 
-        $id = $request->input('id');
+        $dataJson = $request->input('data_json');
 
-        if ($id) {
-            $canvas = CanvasProjeto::where('user_id', $userId)->findOrFail($id);
+        // Verifica se é uma URL (esperamos a URL do Mocky)
+        if (!filter_var($dataJson, FILTER_VALIDATE_URL)) {
+            return response()->json(['success' => false, 'message' => 'Por favor, salve via Mocky para evitar sobrecarga no banco.']);
+        }
+
+        if ($request->id) {
+            $canvas = CanvasProjeto::where('user_id', $userId)->findOrFail($request->id);
             $canvas->update([
                 'titulo' => $request->input('titulo'),
-                'data_json' => $request->input('data_json'),
+                'data_json' => $dataJson,
                 'width' => $request->input('width'),
                 'height' => $request->input('height'),
             ]);
         } else {
             $canvas = CanvasProjeto::create([
                 'user_id' => $userId,
-                'titulo' => 'Projeto salvo',
-                'data_json' => $request->input('data_json'),
+                'titulo' => $request->input('titulo') ?: 'Projeto salvo',
+                'data_json' => $dataJson,
                 'width' => $request->input('width'),
                 'height' => $request->input('height'),
             ]);
@@ -88,7 +91,7 @@ class CanvasProjetoController extends Controller
         return response()->json(['success' => true, 'id' => $canvas->id]);
     }
 
-    // Carregar dados do projeto via AJAX para o editor
+
     public function carregar(Request $request)
     {
         $userId = Auth::id();
@@ -104,12 +107,22 @@ class CanvasProjetoController extends Controller
             return response()->json(['error' => 'Projeto não encontrado'], 404);
         }
 
-        $dataJson = json_decode($canvas->data_json, true);
+        $data = [];
+        if (filter_var($canvas->data_json, FILTER_VALIDATE_URL)) {
+            try {
+                $response = file_get_contents($canvas->data_json);
+                $data = json_decode($response, true);
+            } catch (\Exception $e) {
+                return response()->json(['error' => 'Erro ao carregar JSON do Mocky'], 500);
+            }
+        } else {
+            $data = json_decode($canvas->data_json, true);
+        }
 
         return response()->json([
             'data' => [
-                'pages' => $dataJson['pages'] ?? [],
-                'activePageIndex' => $dataJson['activePageIndex'] ?? 0,
+                'pages' => $data['pages'] ?? [],
+                'activePageIndex' => $data['activePageIndex'] ?? 0,
             ],
             'width' => $canvas->width,
             'height' => $canvas->height,
@@ -118,7 +131,6 @@ class CanvasProjetoController extends Controller
         ]);
     }
 
-    // Excluir projeto
     public function destroy($id)
     {
         $userId = Auth::id();
