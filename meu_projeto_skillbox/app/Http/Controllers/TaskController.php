@@ -93,4 +93,17 @@ class TaskController extends Controller
             abort(403, 'Não autorizado');
         }
     }
+
+    // Rota patch /canvas/{canvas}/tasks/{task}/toggle
+    public function toggleStatus($canvasId, $taskId)
+    {
+        $canvas = CanvasProjeto::findOrFail($canvasId);
+        $this->authorizeOwnership($canvas->user_id);
+
+        $task = Task::findOrFail($taskId);
+        $task->status = $task->status === 'concluida' ? 'pendente' : 'concluida';
+        $task->save();
+
+        return back()->with('success', 'Status da tarefa alterado.');
+    }
 }

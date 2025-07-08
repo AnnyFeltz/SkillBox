@@ -574,6 +574,11 @@ document.addEventListener('DOMContentLoaded', () => {
 
         stage.toDataURL({
             mimeType: 'image/png',
+            width: pageWidth,
+            height: pageHeight,
+            x: 0,
+            y: 0,
+            pixelRatio: 2,
             callback: function (dataUrl) {
                 const a = document.createElement('a');
                 a.href = dataUrl;
@@ -587,6 +592,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 stage.batchDraw();
             }
         });
+
     });
 
     document.getElementById('edit-size').addEventListener('click', () => {

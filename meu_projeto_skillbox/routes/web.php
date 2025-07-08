@@ -33,14 +33,17 @@ Route::middleware(['auth'])->group(function () {
         Route::get('{task}/edit', [TaskController::class, 'edit'])->name('tasks.edit');
         Route::put('{task}', [TaskController::class, 'update'])->name('tasks.update');
         Route::delete('{task}', [TaskController::class, 'destroy'])->name('tasks.destroy');
+        Route::patch('{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
     });
 
-    // Ferramentas (ToolController padrão REST exceto show, create, edit)
-    Route::resource('tools', ToolController::class)->except(['show', 'create', 'edit']);
+    // Ferramentas (ToolController REST completo exceto show)
+    Route::resource('tools', ToolController::class)->except(['show']);
 
     // Adicionar e remover ferramenta em canvas
     Route::post('/canvas/{canvas}/tools', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.tools.adicionar');
     Route::delete('/canvas/{canvas}/tools/{tool}', [CanvasProjetoController::class, 'removerTool'])->name('canvas.tools.remover');
+    Route::post('/canvas/{canvasId}/tools/add', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.adicionarTool');
+    Route::delete('/canvas/{canvasId}/tools/{toolId}/remove', [CanvasProjetoController::class, 'removerTool'])->name('canvas.removerTool');
 });
 
 Route::middleware(['auth', 'verified', IsNotAdmin::class])->group(function () {

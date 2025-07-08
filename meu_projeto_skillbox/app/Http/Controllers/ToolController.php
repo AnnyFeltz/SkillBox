@@ -10,11 +10,14 @@ class ToolController extends Controller
 {
     public function index()
     {
-        $tools = Tool::whereNull('user_id')
-            ->orWhere('user_id', Auth::id())
-            ->get();
+        $tools = Tool::where(function ($query) {
+            $query->where('is_global', true)
+                ->orWhere('user_id', Auth::id());
+        })->get();
 
-        return view('tools.index', compact('tools'));
+        $apiKey = config('services.imgbb.key');
+
+        return view('tools.index', compact('tools', 'apiKey'));
     }
 
     public function create()
@@ -39,6 +42,11 @@ class ToolController extends Controller
     public function edit($id)
     {
         $tool = Tool::findOrFail($id);
+
+        if ($tool->is_global) {
+            return redirect()->route('tools.index')->with('error', 'Ferramentas globais não podem ser editadas.');
+        }
+
         $this->authorizeOwnership($tool->user_id);
 
         return view('tools.edit', compact('tool'));
@@ -47,6 +55,11 @@ class ToolController extends Controller
     public function update(Request $request, $id)
     {
         $tool = Tool::findOrFail($id);
+
+        if ($tool->is_global) {
+            return redirect()->route('tools.index')->with('error', 'Ferramentas globais não podem ser editadas.');
+        }
+
         $this->authorizeOwnership($tool->user_id);
 
         $request->validate([
@@ -61,6 +74,11 @@ class ToolController extends Controller
     public function destroy($id)
     {
         $tool = Tool::findOrFail($id);
+
+        if ($tool->is_global) {
+            return redirect()->route('tools.index')->with('error', 'Ferramentas globais não podem ser excluídas.');
+        }
+
         $this->authorizeOwnership($tool->user_id);
 
         $tool->delete();
@@ -70,7 +88,7 @@ class ToolController extends Controller
 
     private function authorizeOwnership($ownerId)
     {
-        if ($ownerId !== null && $ownerId !== Auth::id()) {
+        if ($ownerId === null || $ownerId !== Auth::id()) {
             abort(403, 'Não autorizado');
         }
     }

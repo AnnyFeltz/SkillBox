@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Tool extends Model
 {
-    protected $fillable = ['nome', 'user_id'];
+    protected $fillable = ['nome', 'user_id', 'is_global'];
 
     public function canvasProjetos()
     {
@@ -17,4 +17,9 @@ class Tool extends Model
     {
         return $this->belongsTo(User::class);
     }
+
+    public function projetos()
+    {
+        return $this->belongsToMany(CanvasProjeto::class, 'canvas_projeto_tool');
+    }   
 }

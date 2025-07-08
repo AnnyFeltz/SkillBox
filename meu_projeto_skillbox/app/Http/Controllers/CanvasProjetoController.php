@@ -45,21 +45,17 @@ class CanvasProjetoController extends Controller
         }
 
         if ($id) {
-            $canvas = CanvasProjeto::where('user_id', Auth::id())->findOrFail($id);
+            $canvas = CanvasProjeto::with(['tools'])->where('user_id', Auth::id())->findOrFail($id);
         } else {
             abort(404, 'Projeto não encontrado');
         }
 
         $tasks = Task::where('canvas_projeto_id', $canvas->id)->get();
-
-        $tools = Tool::whereNull('user_id')
-            ->orWhere('user_id', Auth::id())
-            ->get();
-
+        $tools = $canvas->tools;
         $apiKey = env('IMGBB_API_KEY');
+
         return view('editor', compact('canvas', 'tasks', 'tools', 'apiKey'));
     }
-
 
     public function salvar(Request $request)
     {
