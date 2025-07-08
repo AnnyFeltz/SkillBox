@@ -37,4 +37,9 @@ class CanvasProjeto extends Model
     {
         return $this->hasMany(Task::class, 'canvas_projeto_id');
     }
+
+    public function scopePublicados($query)
+    {
+        return $query->where('is_public', true);
+    }
 }

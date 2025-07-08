@@ -5,6 +5,7 @@ use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CanvasProjetoController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ToolController;
+use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsNotAdmin;
 
@@ -44,14 +45,16 @@ Route::middleware(['auth'])->group(function () {
     Route::delete('/canvas/{canvas}/tools/{tool}', [CanvasProjetoController::class, 'removerTool'])->name('canvas.tools.remover');
     Route::post('/canvas/{canvasId}/tools/add', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.adicionarTool');
     Route::delete('/canvas/{canvasId}/tools/{toolId}/remove', [CanvasProjetoController::class, 'removerTool'])->name('canvas.removerTool');
+
+    Route::get('/canvas/{id}/visualizar', [CanvasProjetoController::class, 'visualizar'])->name('canvas.visualizar');
 });
 
+// Dashboard personalizado para usuários comuns
 Route::middleware(['auth', 'verified', IsNotAdmin::class])->group(function () {
-    Route::get('/dashboard', function () {
-        return view('dashboard');
-    })->name('dashboard');
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
+// Dashboard para admin
 Route::middleware(['auth', IsAdmin::class])->group(function () {
     Route::get('/admin', function () {
         return view('admin.dashboard');

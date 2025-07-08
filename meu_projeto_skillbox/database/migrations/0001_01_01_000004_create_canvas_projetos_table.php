@@ -15,9 +15,11 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('user_id');
             $table->string('titulo')->nullable();
-            $table->longText('data_json');  // JSON pode ser grande, usa longText
+            $table->longText('data_json');
             $table->integer('width')->default(1000);
             $table->integer('height')->default(600);
+            $table->boolean('is_public')->default(false);
+            $table->string('preview_url')->nullable();
             $table->timestamps();
 
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');

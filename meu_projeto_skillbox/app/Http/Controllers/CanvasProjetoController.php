@@ -169,4 +169,10 @@ class CanvasProjetoController extends Controller
 
         return redirect()->back()->with('success', 'Ferramenta removida do projeto!');
     }
+
+    public function visualizar($id)
+    {
+        $canvas = CanvasProjeto::findOrFail($id);
+        return view('canvas.visualizar', compact('canvas'));
+    }
 }
