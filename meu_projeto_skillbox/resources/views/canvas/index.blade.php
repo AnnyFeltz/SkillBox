@@ -21,6 +21,8 @@
             <tr>
                 <th>Título</th>
                 <th>Data</th>
+                <th>Status</th>
+                <th>Ferramentas</th>
                 <th>Ações</th>
                 <th>Miniatura</th>
             </tr>
@@ -30,6 +32,30 @@
             <tr>
                 <td>{{ $canvas->titulo }}</td>
                 <td>{{ $canvas->created_at->format('d/m/Y H:i') }}</td>
+                <td>
+                    {{-- Status baseado se todas as tasks estiverem concluídas --}}
+                    @php
+                        $allDone = $canvas->tasks->count() > 0 && $canvas->tasks->every(fn($t) => $t->status === 'concluida');
+                    @endphp
+                    @if ($canvas->tasks->isEmpty())
+                        <span class="badge bg-secondary">Sem tarefas</span>
+                    @elseif ($allDone)
+                        <span class="badge bg-success">Concluído</span>
+                    @else
+                        <span class="badge bg-warning text-dark">Em andamento</span>
+                    @endif
+                </td>
+                <td>
+                    @if ($canvas->tools->isEmpty())
+                        <small>Sem ferramentas</small>
+                    @else
+                        <ul style="padding-left: 20px; margin: 0;">
+                            @foreach ($canvas->tools as $tool)
+                                <li>{{ $tool->nome }}</li>
+                            @endforeach
+                        </ul>
+                    @endif
+                </td>
                 <td>
                     <a href="{{ url('/editor?id=' . $canvas->id) }}" class="btn btn-sm btn-primary">Abrir</a>
 
@@ -43,7 +69,8 @@
                     <div id="preview-{{ $canvas->id }}"
                         class="mini-preview"
                         data-canvas-id="{{ $canvas->id }}"
-                        style="aspect-ratio: {{ $canvas->height != 0 ? ($canvas->width / $canvas->height) : 1 }}; width: 150px; border: 1px solid #ccc; overflow: hidden;"></div>
+                        style="aspect-ratio: {{ $canvas->height != 0 ? ($canvas->width / $canvas->height) : 1 }}; width: 150px; border: 1px solid #ccc; overflow: hidden;">
+                    </div>
                 </td>
             </tr>
             @endforeach

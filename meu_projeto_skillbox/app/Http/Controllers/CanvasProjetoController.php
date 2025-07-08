@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\CanvasProjeto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use App\Models\Task;
+use App\Models\Tool;
 
 class CanvasProjetoController extends Controller
 {
@@ -48,9 +50,16 @@ class CanvasProjetoController extends Controller
             abort(404, 'Projeto não encontrado');
         }
 
+        $tasks = Task::where('canvas_projeto_id', $canvas->id)->get();
+
+        $tools = Tool::whereNull('user_id')
+            ->orWhere('user_id', Auth::id())
+            ->get();
+
         $apiKey = env('IMGBB_API_KEY');
-        return view('editor', compact('canvas', 'apiKey'));
+        return view('editor', compact('canvas', 'tasks', 'tools', 'apiKey'));
     }
+
 
     public function salvar(Request $request)
     {
@@ -132,5 +141,36 @@ class CanvasProjetoController extends Controller
         $canvas->delete();
 
         return redirect()->route('canvas.index')->with('success', 'Projeto deletado com sucesso.');
+    }
+
+    public function adicionarTool(Request $request, $canvasId)
+    {
+        $request->validate([
+            'tool_id' => 'required|exists:tools,id',
+        ]);
+
+        $canvas = CanvasProjeto::where('user_id', Auth::id())->findOrFail($canvasId);
+        $tool = Tool::findOrFail($request->tool_id);
+
+        if ($tool->user_id !== null && $tool->user_id !== $canvas->user_id) {
+            return redirect()->back()->with('error', 'Você não pode adicionar esta ferramenta ao projeto.');
+        }
+
+        $canvas->tools()->syncWithoutDetaching([$tool->id]);
+
+        return redirect()->back()->with('success', 'Ferramenta adicionada ao projeto!');
+    }
+
+    public function removerTool(Request $request, $canvasId, $toolId)
+    {
+        $canvas = CanvasProjeto::where('user_id', Auth::id())->findOrFail($canvasId);
+
+        if (!$canvas->tools()->where('tool_id', $toolId)->exists()) {
+            return redirect()->back()->with('error', 'Ferramenta não está associada ao projeto.');
+        }
+
+        $canvas->tools()->detach($toolId);
+
+        return redirect()->back()->with('success', 'Ferramenta removida do projeto!');
     }
 }
