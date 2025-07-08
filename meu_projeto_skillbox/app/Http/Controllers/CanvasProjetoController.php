@@ -65,11 +65,6 @@ class CanvasProjetoController extends Controller
 
         $dataJson = $request->input('data_json');
 
-        // Verifica se é uma URL (esperamos a URL do Mocky)
-        if (!filter_var($dataJson, FILTER_VALIDATE_URL)) {
-            return response()->json(['success' => false, 'message' => 'Por favor, salve via Mocky para evitar sobrecarga no banco.']);
-        }
-
         if ($request->id) {
             $canvas = CanvasProjeto::where('user_id', $userId)->findOrFail($request->id);
             $canvas->update([
@@ -90,7 +85,6 @@ class CanvasProjetoController extends Controller
 
         return response()->json(['success' => true, 'id' => $canvas->id]);
     }
-
 
     public function carregar(Request $request)
     {

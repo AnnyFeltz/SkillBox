@@ -649,20 +649,6 @@ document.addEventListener('DOMContentLoaded', () => {
         };
 
         try {
-            const response = await fetch('https://api.mocky.io/api/mock', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify(data)
-            });
-
-            const result = await response.json();
-
-            if (!result || !result.mockUrl) {
-                throw new Error('Erro ao gerar link do Mocky');
-            }
-
-            const jsonUrl = result.mockUrl;
-
             const saveResponse = await fetch('/canvas/salvar', {
                 method: 'POST',
                 headers: {
@@ -672,7 +658,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     id: window.currentCanvasId || null,
                     titulo: titulo,
-                    data_json: jsonUrl,
+                    data_json: JSON.stringify(data),
                     width: pageWidth,
                     height: pageHeight
                 })
@@ -683,16 +669,15 @@ document.addEventListener('DOMContentLoaded', () => {
             if (saveResult.success) {
                 window.currentCanvasId = saveResult.id;
                 if (isManual) alert('Canvas salvo com sucesso!');
-            } else if (isManual) {
-                alert('Erro ao salvar canvas.');
+            } else {
+                if (isManual) alert('Erro ao salvar canvas.');
             }
 
         } catch (err) {
-            console.error('Erro ao salvar com Mocky:', err);
-            if (isManual) alert('Erro ao salvar canvas no Mocky ou servidor.');
+            console.error('Erro ao salvar canvas:', err);
+            if (isManual) alert('Erro ao salvar canvas no servidor.');
         }
     }
-
 
     function carregarCanvasSalvo() {
         if (!window.currentCanvasId) {

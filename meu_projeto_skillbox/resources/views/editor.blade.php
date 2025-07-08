@@ -55,12 +55,12 @@
         <div class="page-sizes" style="display: none; margin-top: 10px;">
             <label>
                 Largura da Página:
-                <input id="page-width" type="number" value="{{ $canvasProjeto->width ?? 1000 }}" min="100" step="10" />
+                <input id="page-width" type="number" value="{{ $canvas->width ?? 1000 }}" min="100" step="10" />
             </label>
 
             <label style="margin-left: 10px;">
                 Altura da Página:
-                <input id="page-height" type="number" value="{{ $canvasProjeto->height ?? 600 }}" min="100" step="10" />
+                <input id="page-height" type="number" value="{{ $canvas->height ?? 600 }}" min="100" step="10" />
             </label>
         </div>
     </div>
