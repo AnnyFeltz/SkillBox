@@ -8,6 +8,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsNotAdmin;
 
+Route::get('/', function () {
+    return view('home');
+})->name('welcome');
+
 Route::middleware(['auth'])->group(function () {
     // CanvasProjeto rotas
     Route::get('/canvas', [CanvasProjetoController::class, 'index'])->name('canvas.index');
