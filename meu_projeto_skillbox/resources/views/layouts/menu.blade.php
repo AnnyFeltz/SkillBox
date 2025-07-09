@@ -3,7 +3,7 @@
         <button id="toggle-sidebar" aria-label="Abrir/fechar menu" aria-expanded="false">
             <span class="material-symbols-outlined menu-icon">menu</span>
         </button>
-        <h2>MeuApp</h2>
+        <h2>Menu</h2>
     </div>
 
     <ul class="menu-list">
