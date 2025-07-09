@@ -1,7 +1,6 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\CanvasProjetoController;
 use App\Http\Controllers\TaskController;
 use App\Http\Controllers\ToolController;
@@ -9,24 +8,22 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsNotAdmin;
 
-Route::get('/', function () {
-    return view('home');
-});
-
 Route::middleware(['auth'])->group(function () {
-    // Perfil
-    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
-    Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
-    Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
-
-    // Canvas
+    // CanvasProjeto rotas
     Route::get('/canvas', [CanvasProjetoController::class, 'index'])->name('canvas.index');
     Route::post('/canvas/salvar', [CanvasProjetoController::class, 'salvar'])->name('canvas.salvar');
     Route::get('/canvas/carregar', [CanvasProjetoController::class, 'carregar'])->name('canvas.carregar');
     Route::delete('/canvas/{id}', [CanvasProjetoController::class, 'destroy'])->name('canvas.destroy');
     Route::get('/editor', [CanvasProjetoController::class, 'editor'])->name('editor');
 
-    // Tarefas associadas a Canvas
+    Route::post('/canvas/{canvas}/tools', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.tools.adicionar');
+    Route::delete('/canvas/{canvas}/tools/{tool}', [CanvasProjetoController::class, 'removerTool'])->name('canvas.tools.remover');
+
+    Route::post('/canvas/{id}/publicar', [CanvasProjetoController::class, 'publicar'])->name('canvas.publicar');
+    Route::get('/canvas/{id}/visualizar', [CanvasProjetoController::class, 'visualizar'])->name('canvas.visualizar');
+    Route::get('/canvas/publicados', [CanvasProjetoController::class, 'publicados'])->name('canvas.publicados');
+
+    // Tarefas associadas ao CanvasProjeto
     Route::prefix('canvas/{canvas}/tasks')->group(function () {
         Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
         Route::get('create', [TaskController::class, 'create'])->name('tasks.create');
@@ -37,24 +34,20 @@ Route::middleware(['auth'])->group(function () {
         Route::patch('{task}/toggle', [TaskController::class, 'toggleStatus'])->name('tasks.toggle');
     });
 
-    // Ferramentas (ToolController REST completo exceto show)
+    // Ferramentas (ToolController REST exceto show)
     Route::resource('tools', ToolController::class)->except(['show']);
 
-    // Adicionar e remover ferramenta em canvas
-    Route::post('/canvas/{canvas}/tools', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.tools.adicionar');
-    Route::delete('/canvas/{canvas}/tools/{tool}', [CanvasProjetoController::class, 'removerTool'])->name('canvas.tools.remover');
-    Route::post('/canvas/{canvasId}/tools/add', [CanvasProjetoController::class, 'adicionarTool'])->name('canvas.adicionarTool');
-    Route::delete('/canvas/{canvasId}/tools/{toolId}/remove', [CanvasProjetoController::class, 'removerTool'])->name('canvas.removerTool');
-
-    Route::get('/canvas/{id}/visualizar', [CanvasProjetoController::class, 'visualizar'])->name('canvas.visualizar');
+    // Perfil (Breeze)
+    Route::get('/profile', [App\Http\Controllers\ProfileController::class, 'edit'])->name('profile.edit');
+    Route::patch('/profile', [App\Http\Controllers\ProfileController::class, 'update'])->name('profile.update');
+    Route::delete('/profile', [App\Http\Controllers\ProfileController::class, 'destroy'])->name('profile.destroy');
 });
 
-// Dashboard personalizado para usuários comuns
+// Dashboards
 Route::middleware(['auth', 'verified', IsNotAdmin::class])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
 });
 
-// Dashboard para admin
 Route::middleware(['auth', IsAdmin::class])->group(function () {
     Route::get('/admin', function () {
         return view('admin.dashboard');

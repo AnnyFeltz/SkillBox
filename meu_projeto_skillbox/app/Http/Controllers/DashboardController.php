@@ -11,15 +11,20 @@ class DashboardController extends Controller
 {
     public function index()
     {
+        $userId = Auth::id();
+
+        // Trabalhos publicados de todos os usuários (públicos)
         $publicados = CanvasProjeto::where('is_public', true)
             ->with('user')
             ->latest()
-            ->take(6)
+            ->take(10)
             ->get();
 
-        $ferramentas = Tool::where('user_id', Auth::id())->get();
+        // Ferramentas do usuário logado
+        $ferramentas = Tool::where('user_id', $userId)->get();
 
-        $meusProjetos = CanvasProjeto::where('user_id', Auth::id())
+        // Projetos do usuário logado (públicos e privados)
+        $meusProjetos = CanvasProjeto::where('user_id', $userId)
             ->latest()
             ->get();
 

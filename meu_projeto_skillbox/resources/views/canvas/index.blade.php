@@ -5,10 +5,11 @@
 @vite('resources/js/app.js')
 @endsection
 
+@section('titulo', '🎨 Meus Projetos')
+
+
 @section('content')
 <div class="container">
-    <h1>🎨 Meus Projetos</h1>
-
     @if (session('success'))
     <div class="alert alert-success">{{ session('success') }}</div>
     @endif

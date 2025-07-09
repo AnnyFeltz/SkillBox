@@ -2,11 +2,15 @@
 
 namespace App\Http\Controllers;
 
+use App\Models\CanvasImagem;
+use Illuminate\Support\Facades\Log;
 use App\Models\CanvasProjeto;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use App\Models\Task;
 use App\Models\Tool;
+use Illuminate\Support\Facades\Http;
+
 
 class CanvasProjetoController extends Controller
 {
@@ -66,9 +70,11 @@ class CanvasProjetoController extends Controller
             'width' => 'required|integer|min:100',
             'height' => 'required|integer|min:100',
             'id' => 'nullable|integer|exists:canvas_projetos,id',
+            'preview_url' => 'nullable|string',  // aceita o preview_url
         ]);
 
         $dataJson = $request->input('data_json');
+        $previewUrl = $request->input('preview_url'); // pega o preview enviado
 
         if ($request->id) {
             $canvas = CanvasProjeto::where('user_id', $userId)->findOrFail($request->id);
@@ -77,6 +83,7 @@ class CanvasProjetoController extends Controller
                 'data_json' => $dataJson,
                 'width' => $request->input('width'),
                 'height' => $request->input('height'),
+                'preview_url' => $previewUrl,  // atualiza o preview_url
             ]);
         } else {
             $canvas = CanvasProjeto::create([
@@ -85,6 +92,7 @@ class CanvasProjetoController extends Controller
                 'data_json' => $dataJson,
                 'width' => $request->input('width'),
                 'height' => $request->input('height'),
+                'preview_url' => $previewUrl,  // salva o preview_url
             ]);
         }
 
@@ -122,6 +130,7 @@ class CanvasProjetoController extends Controller
             'data' => [
                 'pages' => $data['pages'] ?? [],
                 'activePageIndex' => $data['activePageIndex'] ?? 0,
+                'preview_url' => $canvas->preview_url,  // Aqui está a URL da imagem para o preview
             ],
             'width' => $canvas->width,
             'height' => $canvas->height,
@@ -148,7 +157,7 @@ class CanvasProjetoController extends Controller
         $canvas = CanvasProjeto::where('user_id', Auth::id())->findOrFail($canvasId);
         $tool = Tool::findOrFail($request->tool_id);
 
-        if ($tool->user_id !== null && $tool->user_id !== $canvas->user_id) {
+        if ($tool->user_id !== null && $tool->user_id !== $canvas->user_id && !$tool->is_global) {
             return redirect()->back()->with('error', 'Você não pode adicionar esta ferramenta ao projeto.');
         }
 
@@ -156,6 +165,7 @@ class CanvasProjetoController extends Controller
 
         return redirect()->back()->with('success', 'Ferramenta adicionada ao projeto!');
     }
+
 
     public function removerTool(Request $request, $canvasId, $toolId)
     {
@@ -172,7 +182,103 @@ class CanvasProjetoController extends Controller
 
     public function visualizar($id)
     {
-        $canvas = CanvasProjeto::findOrFail($id);
+        $canvas = CanvasProjeto::with(['user', 'tools'])->findOrFail($id);
         return view('canvas.visualizar', compact('canvas'));
+    }
+
+
+    public function publicar(Request $request, $id)
+    {
+        Log::info("Início do método publicar para canvas ID: {$id}");
+
+        $canvas = CanvasProjeto::findOrFail($id);
+
+        if (Auth::id() !== $canvas->user_id) {
+            Log::warning("Usuário " . Auth::id() . " tentou publicar projeto {$id} sem autorização.");
+            return response()->json(['error' => 'Não autorizado'], 403);
+        }
+
+        $imagensData = $request->input('imagens');
+        Log::info('Imagens recebidas para upload: ' . json_encode($imagensData));
+
+        if (!is_array($imagensData) || empty($imagensData)) {
+            Log::error('Nenhuma imagem válida enviada para publicar.');
+            return response()->json(['error' => 'Nenhuma imagem enviada'], 400);
+        }
+
+        $IMGBB_API_KEY = config('services.imgbb.key'); // ou env('IMGBB_API_KEY')
+        Log::info('Chave ImgBB usada: ' . ($IMGBB_API_KEY ? 'OK' : 'NÃO DEFINIDA'));
+
+        // Apaga imagens antigas
+        CanvasImagem::where('canvas_projeto_id', $canvas->id)->delete();
+        Log::info("Imagens antigas do projeto {$canvas->id} apagadas.");
+
+        $urlsSalvas = [];
+
+        foreach ($imagensData as $index => $base64png) {
+            $base64String = preg_replace('#^data:image/\w+;base64,#i', '', $base64png);
+
+            Log::info("Enviando imagem " . ($index + 1) . " para ImgBB.");
+
+            try {
+                $response = Http::asForm()->post("https://api.imgbb.com/1/upload", [
+                    'key' => $IMGBB_API_KEY,
+                    'image' => $base64String,
+                    'name' => 'canvas_' . $canvas->id . '_page_' . ($index + 1),
+                ]);
+            } catch (\Exception $e) {
+                Log::error("Erro na requisição para ImgBB: " . $e->getMessage());
+                return response()->json(['error' => 'Erro ao conectar com ImgBB'], 500);
+            }
+
+            Log::info('Resposta da API ImgBB: ' . $response->body());
+
+            if ($response->successful() && $response->json('success')) {
+                $url = $response->json('data.url');
+                CanvasImagem::create([
+                    'canvas_projeto_id' => $canvas->id,
+                    'url' => $url,
+                    'pagina' => $index + 1,
+                ]);
+                $urlsSalvas[] = $url;
+                Log::info("Imagem " . ($index + 1) . " enviada com sucesso: {$url}");
+            } else {
+                Log::error("Falha ao enviar imagem " . ($index + 1) . " para ImgBB: " . $response->body());
+                return response()->json(['error' => 'Falha ao enviar imagem para ImgBB'], 500);
+            }
+        }
+
+        // Atualiza preview e status público
+        $canvas->preview_url = $urlsSalvas[0] ?? null;
+        $canvas->is_public = true;
+        $canvas->save();
+
+        Log::info("Projeto {$canvas->id} publicado com sucesso. Preview URL: {$canvas->preview_url}");
+
+        return response()->json([
+            'success' => true,
+            'urls' => $urlsSalvas,
+            'message' => 'Projeto publicado com sucesso!'
+        ]);
+    }
+
+    public function publicados()
+    {
+        $publicados = CanvasProjeto::where('is_public', true)
+            ->with('user')
+            ->latest()
+            ->paginate(8);
+
+        return view('canvas.publicados', compact('publicados'));
+    }
+
+
+    public function galeria()
+    {
+        $users = \App\Models\User::with(['canvasProjetos' => function ($q) {
+            $q->latest();
+        }])->get();
+
+        return view('canvas.galeria', compact('users'));
     }
 }

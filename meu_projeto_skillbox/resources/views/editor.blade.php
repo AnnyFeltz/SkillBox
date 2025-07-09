@@ -1,7 +1,7 @@
 @extends('layouts.skillboxApp')
 
 @section('title', 'Editor Visual')
-@section('titulo', 'Editor Visual')
+@section('titulo', '🎨Área de Edição')
 
 @section('vite')
 @vite('resources/js/editor.js')
@@ -11,20 +11,10 @@
 
 <script>
     window.IMGBB_API_KEY = "{{ $apiKey }}";
-    window.initialCanvasWidth = {
-        !!json_encode($canvas - > width ?? 1000) !!
-    };
-    window.initialCanvasHeight = {
-        !!json_encode($canvas - > height ?? 600) !!
-    };
-    window.initialCanvasData = {
-        !!$canvas - > data_json ?? 'null'!!
-    };
-    window.currentCanvasId = {
-        {
-            $canvas - > id ?? 'null'
-        }
-    };
+    window.initialCanvasWidth = {!! json_encode($canvas->width ?? 1000) !!};
+    window.initialCanvasHeight = {!! json_encode($canvas->height ?? 600) !!};
+    window.initialCanvasData = {!! json_encode($canvas->data_json ?? null) !!};
+    window.currentCanvasId = {{ $canvas->id ?? 'null' }};
 </script>
 
 <div class="mb-3">
@@ -51,6 +41,8 @@
             <input type="range" id="zoom-range" min="0.5" max="2" step="0.1" value="1" />
             <label for="zoom-range" class="material-icons">zoom_in</label>
             <button id="reset-zoom" class="material-icons">reset_focus</button>
+            <button id="publish" class="material-icons">publish</button>
+
         </div>
 
         {{-- Controles de página --}}
@@ -137,19 +129,22 @@
 
             <div id="tools-tab" class="tab-content" style="display: none; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
                 {{-- Formulário para associar ferramenta existente --}}
-                <form action="{{ route('canvas.adicionarTool', $canvas->id) }}" method="POST" class="mb-2">
+                <form action="{{ route('canvas.tools.adicionar', $canvas->id) }}" method="POST" class="mb-2">
                     @csrf
                     <div class="input-group">
                         <select name="tool_id" class="form-select form-select-sm" required>
                             <option value="">Escolher ferramenta</option>
-                            @foreach (\App\Models\Tool::where(function ($query) {
+                            @php
+                            $disponiveis = \App\Models\Tool::where(function ($query) {
                             $query->where('is_global', true)
                             ->orWhere('user_id', Auth::id());
-                            })->get() as $tool)
-                            {{-- Mostrar só ferramentas que ainda não estão associadas --}}
-                            @if (!$canvas->tools->contains($tool->id))
+                            })->get()->filter(function ($tool) use ($canvas) {
+                            return !$canvas->tools->contains($tool->id);
+                            });
+                            @endphp
+
+                            @foreach ($disponiveis as $tool)
                             <option value="{{ $tool->id }}">{{ $tool->nome }}</option>
-                            @endif
                             @endforeach
                         </select>
                         <button class="btn btn-sm btn-outline-success" type="submit">+ Associar</button>
@@ -166,7 +161,7 @@
                     @foreach ($tools as $tool)
                     <li class="list-group-item d-flex justify-content-between align-items-center">
                         {{ $tool->nome }}
-                        <form action="{{ route('canvas.removerTool', ['canvasId' => $canvas->id, 'toolId' => $tool->id]) }}" method="POST" onsubmit="return confirm('Remover esta ferramenta do projeto?')">
+                        <form action="{{ route('canvas.tools.remover', ['canvas' => $canvas->id, 'tool' => $tool->id]) }}" method="POST" onsubmit="return confirm('Remover esta ferramenta do projeto?')">
                             @csrf
                             @method('DELETE')
                             <button class="btn btn-sm btn-outline-danger" title="Remover">✖</button>

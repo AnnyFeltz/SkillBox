@@ -20,6 +20,7 @@
     },
     "dependencies": {
         "bootstrap": "^5.3.7",
-        "konva": "^9.3.20"
+        "konva": "^9.3.20",
+        "masonry-layout": "^4.2.2"
     }
 }

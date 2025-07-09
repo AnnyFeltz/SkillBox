@@ -293,6 +293,7 @@ document.addEventListener('DOMContentLoaded', () => {
             if (shapeJSON.className === 'Image' && shapeJSON.attrs.imageUrl) {
                 imagesToLoad++;
                 const imageObj = new Image();
+                imageObj.crossOrigin = "Anonymous"; // <---- ESSA LINHA AQUI
                 imageObj.onload = () => {
                     const konvaImage = new Konva.Image({
                         ...shapeJSON.attrs,
@@ -311,6 +312,11 @@ document.addEventListener('DOMContentLoaded', () => {
                     imagesLoaded++;
                     checkAllImagesLoaded();
                 };
+                imageObj.onerror = () => {
+                    console.warn('Erro ao carregar imagem com crossOrigin:', shapeJSON.attrs.imageUrl);
+                    imagesLoaded++;
+                    checkAllImagesLoaded();
+                }
                 imageObj.src = shapeJSON.attrs.imageUrl;
             } else {
                 const shape = Konva.Node.create(shapeJSON);
@@ -325,7 +331,6 @@ document.addEventListener('DOMContentLoaded', () => {
                 });
             }
         });
-
 
         if (imagesToLoad === 0) {
             deselect();
@@ -449,6 +454,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 const imageUrl = data.data.url;
 
                 const imageObj = new Image();
+                imageObj.crossOrigin = "Anonymous"; // ESSENCIAL para evitar tainted canvas
                 imageObj.onload = function () {
                     const konvaImage = new Konva.Image({
                         x: 50,
@@ -476,6 +482,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     saveCurrentPageShapes();
                     salvarNoServidor();
                 };
+                imageObj.onerror = () => {
+                    alert('Erro ao carregar a imagem após upload.');
+                }
                 imageObj.src = imageUrl;
             } else {
                 alert('Erro ao enviar imagem para ImgBB: ' + (data.error.message || 'Desconhecido'));
@@ -486,6 +495,7 @@ document.addEventListener('DOMContentLoaded', () => {
         }
     }
 
+    document.getElementById('publish').addEventListener('click', publishProject);
 
 
     document.getElementById('add-rect').addEventListener('click', addRectangle);
@@ -649,12 +659,48 @@ document.addEventListener('DOMContentLoaded', () => {
 
         const titulo = document.getElementById('canvas-title')?.value || 'Projeto salvo';
 
-        const data = {
-            pages: pages,
-            activePageIndex: activePageIndex
-        };
-
         try {
+            // Ajusta escala e posição para gerar o PNG limpo da página ativa
+            const oldScale = stage.scaleX();
+            const oldPos = stage.position();
+
+            stage.scale({ x: 1, y: 1 });
+            stage.position({ x: 0, y: 0 });
+            stage.batchDraw();
+
+            // Gera o DataURL da imagem PNG do canvas atual
+            const dataURL = stage.toDataURL({ pixelRatio: 2 });
+
+            // Remove o prefixo do dataURL para ficar só o base64 puro
+            const base64String = dataURL.replace(/^data:image\/(png|jpeg);base64,/, '');
+
+            // Restaura escala e posição antigas
+            stage.scale({ x: oldScale, y: oldScale });
+            stage.position(oldPos);
+            stage.batchDraw();
+
+            // Envia a imagem para o ImgBB via API
+            const imgbbResponse = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded'
+                },
+                body: new URLSearchParams({
+                    image: base64String
+                })
+            });
+
+            const imgbbData = await imgbbResponse.json();
+
+            if (!imgbbData.success) {
+                if (isManual) alert('Erro ao enviar preview para ImgBB.');
+                console.error('Erro ImgBB:', imgbbData);
+                return;
+            }
+
+            const previewUrl = imgbbData.data.url;
+
+            // Agora salva os dados do canvas no backend, junto com o preview_url
             const saveResponse = await fetch('/canvas/salvar', {
                 method: 'POST',
                 headers: {
@@ -664,9 +710,13 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify({
                     id: window.currentCanvasId || null,
                     titulo: titulo,
-                    data_json: JSON.stringify(data),
+                    data_json: JSON.stringify({
+                        pages: pages,
+                        activePageIndex: activePageIndex
+                    }),
                     width: pageWidth,
-                    height: pageHeight
+                    height: pageHeight,
+                    preview_url: previewUrl  // envia o link do preview pro backend
                 })
             });
 
@@ -678,7 +728,6 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 if (isManual) alert('Erro ao salvar canvas.');
             }
-
         } catch (err) {
             console.error('Erro ao salvar canvas:', err);
             if (isManual) alert('Erro ao salvar canvas no servidor.');
@@ -737,6 +786,86 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
+    async function publishProject() {
+        saveCurrentPageShapes();
+
+        const images = [];
+
+        for (let i = 0; i < pages.length; i++) {
+            loadPage(i); // Carrega a página
+            await new Promise(resolve => setTimeout(resolve, 500)); // Espera 500ms para renderizar
+
+            try {
+                // Garante escala e posição para exportar limpo
+                const oldScale = stage.scaleX();
+                const oldPos = stage.position();
+
+                stage.scale({ x: 1, y: 1 });
+                stage.position({ x: 0, y: 0 });
+                stage.batchDraw();
+
+                const dataURL = stage.toDataURL({ pixelRatio: 2 });
+                const imageData = dataURL.split(',')[1]; // só o base64, sem o prefixo
+
+                stage.scale({ x: oldScale, y: oldScale });
+                stage.position(oldPos);
+                stage.batchDraw();
+
+                const res = await fetch(`https://api.imgbb.com/1/upload?key=${IMGBB_API_KEY}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded'
+                    },
+                    body: new URLSearchParams({
+                        image: imageData
+                    })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    images.push(data.data.url);
+                } else {
+                    console.error('Erro ao enviar imagem para ImgBB:', data);
+                    alert('Erro ao enviar uma das imagens para ImgBB. Veja o console.');
+                    return;
+                }
+            } catch (error) {
+                console.error('Erro no upload da imagem:', error);
+                alert('Erro ao enviar imagem para ImgBB.');
+                return;
+            }
+        }
+
+        const previewUrl = images[0] || null;
+
+        try {
+            const response = await fetch(`/canvas/${window.currentCanvasId}/publicar`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content
+                },
+                body: JSON.stringify({
+                    preview_url: previewUrl,
+                    imagens: images
+                })
+            });
+
+            const result = await response.json();
+
+            if (result.success) {
+                alert('Publicado com sucesso!');
+                location.reload();
+            } else {
+                alert('Erro ao publicar o projeto.');
+                console.error('Erro na resposta do servidor:', result);
+            }
+        } catch (err) {
+            console.error('Erro ao enviar dados para publicar:', err);
+            alert('Erro ao publicar o projeto.');
+        }
+    }
 
     function criarCanvasInicial() {
         pages = [{

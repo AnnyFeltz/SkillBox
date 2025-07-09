@@ -17,6 +17,8 @@ class CanvasProjeto extends Model
         'data_json',
         'width',
         'height',
+        'is_public',
+        'preview_url',
     ];
 
     protected $casts = [
@@ -41,5 +43,10 @@ class CanvasProjeto extends Model
     public function scopePublicados($query)
     {
         return $query->where('is_public', true);
+    }
+
+    public function imagens()
+    {
+        return $this->hasMany(CanvasImagem::class, 'canvas_projeto_id')->orderBy('pagina');
     }
 }
