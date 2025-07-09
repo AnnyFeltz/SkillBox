@@ -7,6 +7,7 @@ use App\Http\Controllers\ToolController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Middleware\IsAdmin;
 use App\Http\Middleware\IsNotAdmin;
+use App\Models\Tool;
 
 Route::get('/', function () {
     return view('home');
@@ -27,6 +28,10 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/canvas/{id}/visualizar', [CanvasProjetoController::class, 'visualizar'])->name('canvas.visualizar');
     Route::get('/canvas/publicados', [CanvasProjetoController::class, 'publicados'])->name('canvas.publicados');
 
+    Route::get('/tools', [ToolController::class, 'index'])->name('tools.index');
+
+    Route::get('/perfil', [DashboardController::class, 'perfil'])->name('profile.index');
+    
     // Tarefas associadas ao CanvasProjeto
     Route::prefix('canvas/{canvas}/tasks')->group(function () {
         Route::get('/', [TaskController::class, 'index'])->name('tasks.index');
@@ -53,9 +58,7 @@ Route::middleware(['auth', 'verified', IsNotAdmin::class])->group(function () {
 });
 
 Route::middleware(['auth', IsAdmin::class])->group(function () {
-    Route::get('/admin', function () {
-        return view('admin.dashboard');
-    })->name('admin.dashboard');
+    Route::get('/admin', [DashboardController::class, 'adminDashboard'])->name('admin.dashboard');
 });
 
 require __DIR__ . '/auth.php';

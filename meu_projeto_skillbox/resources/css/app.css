@@ -1,44 +1,29 @@
 @import "bootstrap/dist/css/bootstrap.min.css";
-/* importa bootstrap */
 
-/* Reset básico */
 * {
   margin: 0;
-  /* remove margens */
   padding: 0;
-  /* remove padding */
   box-sizing: border-box;
-  /* padding e border dentro da largura */
 }
 
 body,
 html {
   height: 100%;
-  /* tela cheia */
   font-family: 'Segoe UI', sans-serif;
-  /* fonte padrão */
 }
 
 .conteiner {
   display: flex;
-  /* sidebar + conteúdo lado a lado */
   height: 100vh;
-  /* altura da tela */
 }
 
 .sidebar {
   width: 250px;
-  /* largura aberta */
   background-color: #1e1e2f;
-  /* fundo escuro */
   color: #fff;
-  /* texto branco */
   transition: width 0.3s ease;
-  /* animação largura */
   overflow: hidden;
-  /* esconde conteúdo que vaza */
   position: relative;
-  /* para filhos absolutos */
 }
 
 .sidebar.collapsed {
@@ -638,4 +623,121 @@ canvas {
   margin-top: auto;
   padding: 0.3rem 0.8rem;
   font-size: 0.85rem;
+}
+
+.btn-circle {
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  padding: 0;
+  font-size: 28px;
+  text-align: center;
+  line-height: 38px;
+  display: inline-block;
+}
+
+.db-miniatura-container {
+  height: 150px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.db-miniatura-container img {
+  max-height: 100%;
+  max-width: 100%;
+  object-fit: contain;
+}
+
+.db-mini-preview {
+  background-color: #f9f9f9;
+}
+
+.overflow-auto::-webkit-scrollbar {
+  height: 8px;
+}
+
+.overflow-auto::-webkit-scrollbar-thumb {
+  background-color: #bbb;
+  border-radius: 4px;
+}
+
+.overflow-auto::-webkit-scrollbar-track {
+  background-color: #eee;
+}
+
+.button-deletar {
+  background-color: #dc2626;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+}
+
+.button-deletar:hover {
+  background-color: #b91c1c;
+}
+
+.button-editar {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  font-size: 22px;
+  transition: background-color 0.25s ease;
+}
+
+.button-editar:hover {
+  background-color: #4338ca;
+}
+
+.botoes-edit-delete {
+  display: flex;
+  margin: 10px;
+  gap: 10px;
+  align-items: center;
+}
+
+.botoes-edit-delete form {
+  display: inline;
+  margin: 0px;
+  padding: 0px;
+}
+
+.button-status {
+  color: white;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 10px;
+  cursor: pointer;
+  transition: background-color 0.25s ease;
+  font-size: 20px;
+}
+
+.btn-green {
+  background-color: #22c55e;
+}
+
+.btn-green:hover {
+  background-color: #16a34a;
+}
+
+.btn-yellow {
+  background-color: #facc15;
+}
+
+.btn-yellow:hover {
+  background-color: #eab308;
+}
+
+.card {
+  padding: 30px;
 }

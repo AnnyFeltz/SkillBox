@@ -28,26 +28,32 @@
             </span>
         </div>
 
-        <div class="btn-group">
-            <a href="{{ route('tasks.edit', ['canvas' => $canvas->id, 'task' => $task->id]) }}" class="btn btn-outline-secondary btn-sm">
-                ✏️ Editar
-            </a>
+        <div class="botoes-edit-delete">
+            <form action="{{ route('tasks.edit', ['canvas' => $canvas->id, 'task' => $task->id]) }}" method="GET" style="display:inline;">
+                <button type="submit" class="button-editar material-symbols-outlined" title="Editar tarefa">
+                    edit
+                </button>
+            </form>
 
-            <form action="{{ route('tasks.update', ['canvas' => $canvas->id, 'task' => $task->id]) }}" method="POST" style="display:inline;">
+            <form action="{{ route('tasks.update', ['canvas' => $canvas->id, 'task' => $task->id]) }}" method="POST" class="d-inline">
                 @csrf
                 @method('PUT')
                 <input type="hidden" name="titulo" value="{{ $task->titulo }}">
                 <input type="hidden" name="descricao" value="{{ $task->descricao }}">
                 <input type="hidden" name="status" value="{{ $task->status === 'pendente' ? 'concluida' : 'pendente' }}">
-                <button type="submit" class="btn btn-outline-info btn-sm">
-                    🔄 {{ $task->status === 'pendente' ? 'Concluir' : 'Reabrir' }}
+
+                <button type="submit"
+                    class="button-status material-symbols-outlined {{ $task->status === 'pendente' ? 'btn-green' : 'btn-yellow' }}"
+                    title="{{ $task->status === 'pendente' ? 'Concluir tarefa' : 'Reabrir tarefa' }}">
+                    {{ $task->status === 'pendente' ? 'check' : 'schedule' }}
                 </button>
             </form>
+
 
             <form action="{{ route('tasks.destroy', ['canvas' => $canvas->id, 'task' => $task->id]) }}" method="POST" onsubmit="return confirm('Tem certeza que deseja excluir esta tarefa?')" style="display:inline;">
                 @csrf
                 @method('DELETE')
-                <button type="submit" class="btn btn-outline-danger btn-sm">🗑️</button>
+                <button type="submit" class="button-deletar material-symbols-outlined">delete</button>
             </form>
         </div>
     </li>
@@ -58,4 +64,12 @@
 <a href="{{ route('editor', ['id' => $canvas->id]) }}" class="btn btn-outline-primary mt-3">
     🖌️ Voltar ao Editor Visual
 </a>
+@endsection
+
+@section('menu-items')
+<li><a href="/dashboard"><i class="icon-dashboard material-symbols-outlined">dashboard</i> <span class="label">Dashboard</span></a></li>
+<li><a href="/profile"><i class="icon-user material-symbols-outlined">account_circle</i> <span class="label">Perfil</span></a></li>
+<li><a href="/canvas/publicados"><i class="icon-user material-symbols-outlined">gallery_thumbnail</i> <span class="label">Galeria</span></a></li>
+<li><a href="/canvas"><i class="icon-user material-symbols-outlined">wall_art</i> <span class="label">Canvas</span></a></li>
+<li><a href="/tools"><i class="icon-user material-symbols-outlined">construction</i> <span class="label">Ferramentas</span></a></li>
 @endsection

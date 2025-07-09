@@ -19,11 +19,12 @@
         <label for="password_confirmation" class="mt-4">Confirmar Nova Senha</label>
         <input id="password_confirmation" name="password_confirmation" type="password" required autocomplete="new-password" class="input-field" />
         @error('password_confirmation') <p class="error">{{ $message }}</p> @enderror
+        <br>
 
-        <button type="submit" class="btn-primary mt-6">Salvar</button>
+        <button type="submit" class="m-3 btn-primary mt-6">Salvar</button>
 
         @if (session('status') === 'password-updated')
-            <p class="success-msg" x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)">Salvo.</p>
+        <p class="success-msg" x-data="{ show: true }" x-show="show" x-transition x-init="setTimeout(() => show = false, 2000)">Salvo.</p>
         @endif
     </form>
 </section>

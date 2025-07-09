@@ -11,10 +11,20 @@
 
 <script>
     window.IMGBB_API_KEY = "{{ $apiKey }}";
-    window.initialCanvasWidth = {!! json_encode($canvas->width ?? 1000) !!};
-    window.initialCanvasHeight = {!! json_encode($canvas->height ?? 600) !!};
-    window.initialCanvasData = {!! json_encode($canvas->data_json ?? null) !!};
-    window.currentCanvasId = {{ $canvas->id ?? 'null' }};
+    window.initialCanvasWidth = {
+        !!json_encode($canvas - > width ?? 1000) !!
+    };
+    window.initialCanvasHeight = {
+        !!json_encode($canvas - > height ?? 600) !!
+    };
+    window.initialCanvasData = {
+        !!json_encode($canvas - > data_json ?? null) !!
+    };
+    window.currentCanvasId = {
+        {
+            $canvas - > id ?? 'null'
+        }
+    };
 </script>
 
 <div class="mb-3">
@@ -85,11 +95,12 @@
         {{-- Tarefas --}}
         <div>
             <button class="toggle-tab btn btn-outline-primary mb-2" data-target="#tasks-tab">
-                Tarefas ({{ $tasks->count() }})
+                📋 Tarefas ({{ $tasks->count() }})
             </button>
-            <button id="btn-add-task" class="btn btn-sm btn-success mb-2">Adicionar Tarefa</button>
 
             <div id="tasks-tab" class="tab-content" style="display: none; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                <button id="btn-add-task" class="btn btn-sm btn-success mb-2"> + Adicionar Tarefa</button>
+
                 @if ($tasks->isEmpty())
                 <p><small>Sem tarefas para este projeto.</small></p>
                 @else
@@ -105,7 +116,7 @@
                                 @csrf
                                 @method('PATCH')
                                 <button type="submit" class="btn btn-sm btn-outline-{{ $task->status === 'concluida' ? 'warning' : 'success' }}" title="Alterar status">
-                                    {{ $task->status === 'concluida' ? 'Marcar como Pendente' : 'Concluir' }}
+                                    {{ $task->status === 'concluida' ? 'Reabrir' : 'Concluir' }}
                                 </button>
                             </form>
                             <span class="badge bg-{{ $task->status === 'concluida' ? 'success' : 'warning text-dark' }}">
@@ -121,13 +132,14 @@
         </div>
 
         {{-- Ferramentas --}}
-        {{-- Ferramentas --}}
         <div>
             <button class="toggle-tab btn btn-outline-secondary mb-2" data-target="#tools-tab">
-                Ferramentas ({{ $tools->count() }})
+                🛠 Ferramentas ({{ $tools->count() }})
             </button>
 
             <div id="tools-tab" class="tab-content" style="display: none; max-height: 300px; overflow-y: auto; border: 1px solid #ddd; padding: 10px;">
+                <a href="{{ route('tools.create') }}" class="btn btn-sm btn-primary mb-2"> + Criar Nova Ferramenta</a>
+                <a href="{{ route('tools.index') }}" class="btn btn-outline-secondary mb-2">🔧 Visualizar todas</a>
                 {{-- Formulário para associar ferramenta existente --}}
                 <form action="{{ route('canvas.tools.adicionar', $canvas->id) }}" method="POST" class="mb-2">
                     @csrf
@@ -150,9 +162,6 @@
                         <button class="btn btn-sm btn-outline-success" type="submit">+ Associar</button>
                     </div>
                 </form>
-
-                <a href="{{ route('tools.create') }}" class="btn btn-sm btn-primary mb-2">Criar Nova Ferramenta</a>
-                <a href="{{ route('tools.index') }}" class="btn btn-outline-secondary mb-2">🔧 Visualizar todas</a>
 
                 @if ($tools->isEmpty())
                 <p><small>Sem ferramentas associadas a este projeto.</small></p>
