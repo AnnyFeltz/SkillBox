@@ -1,13 +1,17 @@
 [phases.setup]
-nixPkgs = ['php81', 'mariadb', 'nodejs_18']
+nixPkgs = ['php81', 'mariadb', 'nodejs_18', 'curl']
 
 [phases.install]
 cmds = [
-  # Instala Composer manualmente
+  # Baixa e instala o Composer
   'curl -sS https://getcomposer.org/installer | php',
+  'chmod +x composer.phar',
   'mv composer.phar /usr/local/bin/composer',
 
-  # Instala dependências do Laravel
+  # Verifica se o Composer está disponível
+  'composer --version',
+
+  # Instala dependências Laravel
   'composer install --no-interaction --prefer-dist --optimize-autoloader',
   'npm ci',
   'php artisan key:generate',
