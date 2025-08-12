@@ -1,8 +1,13 @@
 [phases.setup]
-nixPkgs = ['php', 'composer', 'mysql', 'nodejs_18']
+nixPkgs = ['php81', 'composer', 'mysql', 'nodejs_18']
 
 [phases.install]
-cmds = ['composer install', 'npm ci', 'php artisan key:generate', 'php artisan migrate --force']
+cmds = [
+  'composer install --no-interaction --prefer-dist --optimize-autoloader',
+  'npm ci',
+  'php artisan key:generate',
+  'php artisan migrate --force'
+]
 
 [phases.build]
 cmds = ['npm run build']
