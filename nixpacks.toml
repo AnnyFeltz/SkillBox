@@ -1,10 +1,17 @@
+# nixpacks.toml
 [phases.setup]
-nixPkgs = ['php81', 'mariadb', 'nodejs_18', 'curl']
+# Pacotes que serão instalados antes de tudo
+nixPkgs = [
+  'php81',
+  'mariadb',
+  'nodejs_18',
+  'curl'
+]
 
 [phases.install]
 cmds = [
   '''
-  # Instala o Composer em um único comando
+  # Instala o Composer
   curl -sS https://getcomposer.org/installer | php &&
   chmod +x composer.phar &&
   mv composer.phar /usr/local/bin/composer &&
@@ -12,14 +19,24 @@ cmds = [
 
   # Instala dependências do Laravel
   composer install --no-interaction --prefer-dist --optimize-autoloader &&
+
+  # Instala dependências do Node
   npm ci &&
+
+  # Gera chave do Laravel
   php artisan key:generate &&
+
+  # Roda as migrations
   php artisan migrate --force
   '''
 ]
 
 [phases.build]
-cmds = ['npm run build']
+cmds = [
+  # Compila assets do Laravel
+  'npm run build'
+]
 
 [start]
+# Comando para iniciar o Laravel no Railway
 cmd = 'php artisan serve --host=0.0.0.0 --port=$PORT'
